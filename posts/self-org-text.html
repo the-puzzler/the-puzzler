@@ -309,22 +309,33 @@ So lets apply it to our simulation now, does it converge?!
   displacement had occured the model would have to predict the correct token (CELoss).
   <br>
   The model I converged to was effectivley a pre-norm transformer encoder with radial attention mask.
-  The model had ~150M parameters and it trained over 250M text tokens.
+  The model had ~150M parameters and it trained over 250M text tokens (very few generally speaking).
+  Finally I also used a pretty naive corruption level sampling and loss re-weighting as well as some other minor tricks.
+  <br>
+  <br>
 </p>
 
 <hr>
 
-<h2>Results</h2>
+<h2>Training Results</h2>
+<h2>Model Training</h2>
+<p>
+  Here are the training curves from the 28th epoch. The model was still improving but alas, my battle with the finitude of
+  time leaves me triumphed over once again.
 
+</p>
+
+<img src="posts/self-org-text-imgs/train_img.png" alt="Results of training epoch 28" style="max-width:100%; border-radius:8px;">
+
+<hr>
 
 <h2>Experiments & Examples</h2>
 <p>
-  Some neat simulations:
+  I suppose now you will want to see some actual results!
+  During training the model simultaneosuly denoises all tokens in the sequence but in practice this is ineffective.
+  It would be like trying to paint a model that keeps changing position. To resolve this I have adopted a simple sampling scheme.
+  Every step a random token is chosen and its logits are sampled. There are likely better methods, but for now this will do.
 </p>
-<ul>
-  <li>Short-range interactions → disorder</li>
-  <li>Above critical range → spontaneous order</li>
-</ul>
 
 <!-- Embed images/plots -->
 <img src="../assets/ising_example.png" alt="Ising simulation result">

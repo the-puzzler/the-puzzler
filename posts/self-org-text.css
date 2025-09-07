@@ -34,3 +34,13 @@
 .mctrl output{min-width:3.6ch;text-align:right;font-variant-numeric:tabular-nums}
 #mCanvasLite{width:100%;height:220px;background:#fff;border-radius:8px;display:block;image-rendering:crisp-edges}
 .mnote{opacity:.7}
+
+
+.post img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+    margin: 1em auto;
+  }
+  
