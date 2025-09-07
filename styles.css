@@ -199,13 +199,39 @@
     --chrome-bottom: 0px;           /* added */
   }
   
-  @media (max-width:560px){
-    .sheet{
-      /* add chrome + safe-area to your existing padding */
-      padding-bottom: calc(var(--sheet-pad-bottom) + var(--safe-bottom) + var(--chrome-bottom));
-    }
-    .page-num{
-      bottom: calc(8px + var(--safe-bottom) + var(--chrome-bottom));
-    }
-  }
-  
+ /* Compact header style */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;      /* force single row */
+  padding-bottom: 2px;    /* tighter */
+  margin-bottom: 6px;
+}
+
+.brand {
+  font-size: 0.9rem;      /* smaller */
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 0.7rem;      /* smaller */
+  padding: 0 4px;
+}
+
+.nav {
+  display: flex;
+  gap: 10px;              /* tighter spacing */
+  margin-left: auto;
+  font-size: 0.85rem;     /* slightly smaller links */
+  align-items: center;
+}
+
+.nav a {
+  white-space: nowrap;    /* keep links from wrapping */
+}
+@media (max-width: 560px) {
+  .brand { font-size: 0.8rem; }
+  .badge { font-size: 0.65rem; }
+  .nav { gap: 8px; font-size: 0.8rem; }
+}
