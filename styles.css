@@ -193,38 +193,76 @@
     .container{ padding-bottom:8px }
   }
   
+  :root{
+    /* how much to zoom out (lower = smaller). 0.94–0.90 works well */
+    --page-scale: 0.93;
+  
+    /* optional extra gutter inside the viewport */
+    --page-gutter: max(12px, env(safe-area-inset-bottom, 0px));
+  }
+  
   @media (max-width:560px){
-    body:has(.post.book-mode){
-      overflow-y:hidden; /* keep vertical scroll disabled */
+    /* keep the book vibe (no vertical scroll at the root) */
+    body:has(.post.book-mode){ overflow-y:hidden }
+  
+    .post.book-mode .book{
+      height: 100svh; /* use the *visible* small viewport; okay because we underscan */
+      /* if your browser supports dvh, prefer it: */
     }
-    .book{
-      height: var(--sheet-h); /* controlled by JS */
+    @supports (height: 100dvh){
+      .post.book-mode .book{ height: 100dvh; }
     }
-    .sheet{
-      height: var(--sheet-h);
-      overflow:hidden;
+  
+    /* wrapper that is exactly viewport-high */
+    .post.book-mode .sheet-wrap{
+      height: 100%;
+      width: 100%;
+      overflow: hidden;          /* clip the over-sized inner content */
+      display: flex;
+    }
+  
+    /* inner layer that we “zoom out” */
+    .post.book-mode .sheet-zoom{
+      /* make it bigger than the wrapper so that scaling it down fits with margin */
+      width: calc(100% / var(--page-scale));
+      height: calc(100% / var(--page-scale));
+      transform: scale(var(--page-scale));
+      transform-origin: top left;    /* important */
+      padding: var(--sheet-pad-top) var(--sheet-pad-x)
+               calc(var(--sheet-pad-bottom) + var(--page-gutter));
+      /* your existing styles may add borders etc. — that’s fine */
+    }
+  
+    /* if you previously set height on .sheet, remove it or let this override */
+    .post.book-mode .sheet{
+      height: auto; /* the zoomed inner provides the sizing now */
+    }
+  
+    /* cap tall media/code so they never touch the edges even after scale */
+    .post.book-mode img,
+    .post.book-mode video{
+      max-height: 80%;
+      object-fit: contain;
+    }
+    .post.book-mode pre{
+      max-height: 80%;
+      overflow: auto;
     }
   }
-  .sheet{
-    padding-bottom: calc(var(--sheet-pad-bottom) + env(safe-area-inset-bottom, 0px));
-  }
+  
   @media (max-width:560px){
-    body:has(.post.book-mode){ overflow-y:hidden } /* keep the book vibe */
-  
-    /* one true page height, supplied by JS */
-    .book{ height: var(--sheet-h) }
-    .sheet{
-      height: var(--sheet-h);
-      overflow:hidden;
-      padding-bottom: calc(var(--sheet-pad-bottom) + env(safe-area-inset-bottom, 0px));
+    .post.book-mode .sheet{
+      height: var(--vp-h, 100svh);
+      overflow: hidden;
+      position: relative;
+      padding: 0; /* moved to inner */
     }
-  
-    /* make the header a known, non-overlapping height */
-    .header{
-      position: sticky;
-      top: env(safe-area-inset-top, 0px);
-      z-index: 10;
-      background: var(--bg);
+    .post.book-mode .page-inner{
+      transform-origin: top left;
+      will-change: transform;
+      padding: var(--sheet-pad-top) var(--sheet-pad-x)
+               calc(var(--sheet-pad-bottom) + env(safe-area-inset-bottom, 0px));
     }
   }
   
+  @media (max-width:560px){ .sheet{ outline:1px dashed red } }

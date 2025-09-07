@@ -308,6 +308,70 @@ function getCurrentPostPath(){
 // -----------------------------
 // Post renderer
 // -----------------------------
+// async function renderPost(){
+//   const contentEl = document.querySelector('#post-content');
+//   if(!contentEl) return;
+
+//   const params = new URLSearchParams(location.search);
+//   const path = params.get('p');
+//   if(!path){
+//     contentEl.innerHTML = `<p>Missing post path.</p>`;
+//     return;
+//   }
+
+//   try{
+//     const res = await fetch(path, { cache: 'no-store' });
+//     const html = await res.text();
+//     contentEl.innerHTML = html;
+
+//     // Ensure headings have stable final text before any measuring
+//     normalizeHeadings(contentEl);
+
+//     // Typeset math first (accurate heights)
+//     await typesetAfterLoad(contentEl);
+
+//     // Mobile book packing
+//     const isPhone = window.matchMedia('(max-width: 560px)').matches;
+//     if (isPhone) {
+//       enableSoftBookMode(contentEl);
+
+//       const reflowOnce = debounce(async () => {
+//         document.documentElement.style.setProperty('--sheet-h', `${getPageMaxHeight()}px`);
+//         const book = contentEl.querySelector('.book');
+//         if (book) {
+//           normalizeHeadings(book); // avoid capturing scrambled title
+//           const linearHTML = Array.from(book.querySelectorAll('.sheet')).map(s => s.innerHTML).join('');
+//           contentEl.innerHTML = linearHTML;
+//         } else if (contentEl._originalHTML) {
+//           contentEl.innerHTML = contentEl._originalHTML;
+//           normalizeHeadings(contentEl);
+//           await typesetAfterLoad(contentEl);
+//         }
+//         enableSoftBookMode(contentEl);
+//         document.dispatchEvent(new CustomEvent('post:ready', { detail: { path } }));
+//       }, 150);
+
+//       window.addEventListener('orientationchange', reflowOnce, { once: true });
+//       window.addEventListener('load', reflowOnce, { once: true });
+//       contentEl.querySelectorAll('img').forEach(img => {
+//         if (!img.complete) img.addEventListener('load', reflowOnce, { once: true });
+//       });
+//     }
+
+//     // Load per-post sidecars AFTER packing, then fire post:ready
+//     loadSidecarAssets(path);
+//     document.dispatchEvent(new CustomEvent('post:ready', { detail: { path } }));
+
+//   }catch(e){
+//     console.error(e);
+//     contentEl.innerHTML = `<p>Failed to load post.</p>`;
+//   }
+// }
+
+
+// -----------------------------
+// Post renderer (PER-PAGE EXACT FIT)
+// -----------------------------
 async function renderPost(){
   const contentEl = document.querySelector('#post-content');
   if(!contentEl) return;
@@ -319,27 +383,197 @@ async function renderPost(){
     return;
   }
 
+  // ======= Helpers scoped to this function =======
+  function ensureInner(){
+    const post = contentEl.closest('.post.book-mode');
+    if (!post) return;
+    post.querySelectorAll('.sheet').forEach(sheet => {
+      let inner = sheet.querySelector(':scope > .page-inner');
+      if (!inner) {
+        inner = document.createElement('div');
+        inner.className = 'page-inner';
+        while (sheet.firstChild) inner.appendChild(sheet.firstChild);
+        sheet.appendChild(inner);
+      }
+      // clear any previous scaling before measuring
+      inner.style.transform = 'none';
+      inner.style.zoom = '';
+    });
+  }
+
+  function setViewportVars(){
+    const avail = getPageMaxHeight(); // your existing helper (vv.height - header - pad)
+    const px = Math.max(0, Math.floor(avail));
+    const root = document.documentElement;
+    root.style.setProperty('--vp-h',    px + 'px');
+    root.style.setProperty('--sheet-h', px + 'px');
+    return px;
+  }
+
+  const supportsZoom = CSS.supports?.('zoom', '1') || /Safari|iPhone|iPad/i.test(navigator.userAgent);
+
+  // Measure the PAINTED height of an inner (taking scale into account)
+  function paintedHeight(inner){
+    // getBoundingClientRect reflects both zoom *and* transforms reliably
+    return inner.getBoundingClientRect().height || 0;
+  }
+
+  // Apply a temporary scale to measure; returns painted height at that scale.
+  function measureAtScale(inner, s){
+    // reset
+    inner.style.transform = 'none';
+    if (supportsZoom) inner.style.zoom = '';
+    // set
+    if (s < 1) {
+      if (supportsZoom) inner.style.zoom = String(s);
+      else inner.style.transform = `scale(${s})`;
+    }
+    // read
+    const h = paintedHeight(inner);
+    return h;
+  }
+
+  // Binary search the LARGEST s in [minS, 1] such that paintedHeight <= avail - marginPx
+  
+// Binary search the MAX scale that fits, with a smaller safety + a final nudge up
+function fitInnerExactly(inner, avail, options){
+  // leaner safety
+  const marginPct = options?.marginPct ?? 0.006; // 0.6% (was 1.2%)
+  const marginPx  = options?.marginPx  ?? 0;     // 0 px (was 1px per DPR)
+  const lowerCap  = options?.minScale  ?? 0.75;  // don’t go microscopic
+  const supportsZoom = CSS.supports?.('zoom','1') || /Safari|iPhone|iPad/i.test(navigator.userAgent);
+
+  // measure helper at a given scale
+  function measureAtScale(s){
+    // reset
+    inner.style.transform = 'none';
+    if (supportsZoom) inner.style.zoom = '';
+    // set
+    if (s < 1){
+      if (supportsZoom) inner.style.zoom = String(s);
+      else inner.style.transform = `scale(${s})`;
+    }
+    // read
+    return paintedHeight(inner);
+  }
+
+  // quick path: full size already fits
+  if (measureAtScale(1) <= (avail - marginPx)){
+    if (supportsZoom) inner.style.zoom = '';
+    inner.style.transform = 'none';
+    inner.dataset.scale = '1.000';
+    return 1;
+  }
+
+  // search the largest s ∈ [lowerCap, 1] that fits
+  let lo = lowerCap, hi = 1;
+  let best = lo;
+  for (let i = 0; i < 14; i++){            // a few extra iters for precision
+    const mid = (lo + hi) / 2;
+    const h   = measureAtScale(mid);
+    if (h <= (avail - marginPx)) { best = mid; lo = mid; }
+    else                         { hi = mid; }
+  }
+
+  // optimistic nudge up to reclaim a hair of space (counteracts tiny rounding)
+  const nudge = 0.004; // 0.4%
+  let finalS  = Math.min(1, best + nudge);
+  // if nudge pushed us over, step back once
+  if (measureAtScale(finalS) > (avail - marginPx)) {
+    finalS = best;
+    measureAtScale(finalS); // apply exactly
+  }
+
+  // lock it in (already applied by measureAtScale)
+  inner.dataset.scale = finalS.toFixed(3);
+  return finalS;
+}
+
+  function fitAllSheets(){
+    ensureInner();
+    const avail = setViewportVars();
+
+    const inners = Array.from(
+      contentEl.closest('.post.book-mode')?.querySelectorAll('.sheet > .page-inner') || []
+    );
+    if (!inners.length) return;
+
+    // Fit each page independently to “just enough”
+    inners.forEach(inner => {
+      fitInnerExactly(inner, avail, { marginPct: 0.012, marginPx: undefined, minScale: 0.70 });
+    });
+  }
+
+  let fitRAF = 0;
+  function chaseFit(ms = 900){
+    const t0 = performance.now();
+    cancelAnimationFrame(fitRAF);
+    const tick = () => {
+      fitAllSheets();
+      if (performance.now() - t0 < ms) fitRAF = requestAnimationFrame(tick);
+    };
+    fitRAF = requestAnimationFrame(tick);
+  }
+
+  async function startViewportFitterOnce(){
+    if (contentEl._fitStarted) return;
+    contentEl._fitStarted = true;
+
+    // two paints to let Safari URL bar + line wraps settle
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    chaseFit(900);
+
+    // follow dynamic viewport changes
+    if (window.visualViewport) {
+      visualViewport.addEventListener('resize', () => chaseFit(900), { passive:true });
+      visualViewport.addEventListener('scroll', () => chaseFit(900), { passive:true });
+    } else {
+      window.addEventListener('resize', () => chaseFit(900), { passive:true });
+      window.addEventListener('scroll', () => chaseFit(900), { passive:true });
+    }
+    window.addEventListener('orientationchange', () => chaseFit(1200), { passive:true });
+    window.addEventListener('pageshow', () => chaseFit(900), { passive:true });
+    window.addEventListener('load', () => chaseFit(900), { passive:true });
+
+    // refit on content/layout changes
+    if (window.MutationObserver) {
+      const mo = new MutationObserver(() => chaseFit(900));
+      mo.observe(contentEl, { childList:true, subtree:true });
+    }
+    if (document.fonts?.ready) document.fonts.ready.then(() => chaseFit(600)).catch(()=>{});
+    contentEl.querySelectorAll('img,video').forEach(el => {
+      el.addEventListener('load', () => chaseFit(600), { once:true });
+      el.addEventListener('loadedmetadata', () => chaseFit(600), { once:true });
+    });
+    if (window.MathJax?.startup?.promise) {
+      MathJax.startup.promise.then(() => chaseFit(900)).catch(()=>{});
+    }
+    window.addEventListener('post:ready', () => chaseFit(900));
+  }
+  // ===============================================
+
   try{
     const res = await fetch(path, { cache: 'no-store' });
     const html = await res.text();
     contentEl.innerHTML = html;
 
-    // Ensure headings have stable final text before any measuring
+    // Stable heading text before any measuring
     normalizeHeadings(contentEl);
 
-    // Typeset math first (accurate heights)
+    // Typeset math first for accurate heights
     await typesetAfterLoad(contentEl);
 
-    // Mobile book packing
+    // Build book pages on phones
     const isPhone = window.matchMedia('(max-width: 560px)').matches;
     if (isPhone) {
       enableSoftBookMode(contentEl);
 
+      // Rebuild-once hooks then refit
       const reflowOnce = debounce(async () => {
         document.documentElement.style.setProperty('--sheet-h', `${getPageMaxHeight()}px`);
         const book = contentEl.querySelector('.book');
         if (book) {
-          normalizeHeadings(book); // avoid capturing scrambled title
+          normalizeHeadings(book);
           const linearHTML = Array.from(book.querySelectorAll('.sheet')).map(s => s.innerHTML).join('');
           contentEl.innerHTML = linearHTML;
         } else if (contentEl._originalHTML) {
@@ -349,6 +583,7 @@ async function renderPost(){
         }
         enableSoftBookMode(contentEl);
         document.dispatchEvent(new CustomEvent('post:ready', { detail: { path } }));
+        chaseFit(900);
       }, 150);
 
       window.addEventListener('orientationchange', reflowOnce, { once: true });
@@ -356,17 +591,24 @@ async function renderPost(){
       contentEl.querySelectorAll('img').forEach(img => {
         if (!img.complete) img.addEventListener('load', reflowOnce, { once: true });
       });
+
+      // start per-page exact fitter after pages/typeset exist
+      await startViewportFitterOnce();
     }
 
-    // Load per-post sidecars AFTER packing, then fire post:ready
+    // Sidecars after packing
     loadSidecarAssets(path);
     document.dispatchEvent(new CustomEvent('post:ready', { detail: { path } }));
+
+    // Final follow-up fit
+    if (window.matchMedia('(max-width: 560px)').matches) chaseFit(900);
 
   }catch(e){
     console.error(e);
     contentEl.innerHTML = `<p>Failed to load post.</p>`;
   }
 }
+
 
 
 
@@ -379,121 +621,3 @@ addEventListener('DOMContentLoaded', () => {
 });
 
 
-(function viewportLock() {
-  const root    = document.documentElement;
-  const header  = document.querySelector('.header');
-  const post    = document.querySelector('.post.book-mode');
-  const content = document.querySelector('#post-content');
-  if (!post) return;
-
-  // util: parse "12px" -> 12
-  const px = v => (v ? parseFloat(String(v)) || 0 : 0);
-
-  // read CSS safe-area from your :root variable if present
-  function getSafeBottom() {
-    const cs = getComputedStyle(root);
-    // if you set --safe-bottom: env(safe-area-inset-bottom), this will resolve
-    return px(cs.getPropertyValue('--safe-bottom')) || 0;
-  }
-
-  let raf = 0;
-  let chasing = 0;
-
-  function measureAndSet() {
-    // visible height that respects the current URL bar state
-    const vv = window.visualViewport;
-    const visible = vv ? vv.height : window.innerHeight;
-
-    // header height can change after fonts load / reflow
-    const headerH = header ? header.getBoundingClientRect().height : 0;
-
-    // tiny fudge to avoid off-by-1 clipping (round down and subtract 1)
-    const h = Math.max(0, Math.floor(visible - headerH) - 1);
-
-    root.style.setProperty('--sheet-h', h + 'px');
-  }
-
-  // chase the toolbar animation for a short burst
-  function burstRecalc(ms = 800) {
-    const start = performance.now();
-    cancelAnimationFrame(chasing);
-    const tick = () => {
-      measureAndSet();
-      if (performance.now() - start < ms) {
-        chasing = requestAnimationFrame(tick);
-      }
-    };
-    chasing = requestAnimationFrame(tick);
-  }
-
-  // schedule after *two* paints so layout/URL bar settles a bit
-  function afterFirstRealPaint(fn) {
-    requestAnimationFrame(() => requestAnimationFrame(fn));
-  }
-
-  function hardRefresh() {
-    measureAndSet();
-    burstRecalc();
-  }
-
-  // --- event wiring -------------------------------------------------
-
-  // initial: wait for DOM, fonts, and first paint
-  function init() {
-    afterFirstRealPaint(hardRefresh);
-    // fonts can change header metrics
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(hardRefresh).catch(() => {});
-    }
-    // images/videos inside the post can change flow (even if we clamp overflow)
-    content?.querySelectorAll('img, video').forEach(el => {
-      el.addEventListener('load', hardRefresh, { once: true });
-      el.addEventListener('loadedmetadata', hardRefresh, { once: true });
-    });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init, { once: true });
-  } else {
-    init();
-  }
-
-  // full page load / bfcache restore
-  window.addEventListener('load', hardRefresh);
-  window.addEventListener('pageshow', hardRefresh);
-  window.addEventListener('orientationchange', hardRefresh);
-
-  // follow URL bar changes
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', hardRefresh, { passive: true });
-    window.visualViewport.addEventListener('scroll', hardRefresh, { passive: true });
-  } else {
-    window.addEventListener('resize', hardRefresh, { passive: true });
-    window.addEventListener('scroll', hardRefresh, { passive: true });
-  }
-
-  // header size can change with wraps; observe it
-  if (window.ResizeObserver && header) {
-    const ro = new ResizeObserver(hardRefresh);
-    ro.observe(header);
-  }
-
-  // your app injects post HTML into #post-content — watch for that
-  if (window.MutationObserver && content) {
-    const mo = new MutationObserver(() => {
-      // new nodes? recompute now and keep chasing for a bit
-      hardRefresh();
-      // attach load listeners for any newly inserted media
-      content.querySelectorAll('img, video').forEach(el => {
-        el.addEventListener('load', hardRefresh, { once: true });
-        el.addEventListener('loadedmetadata', hardRefresh, { once: true });
-      });
-    });
-    mo.observe(content, { childList: true, subtree: true });
-  }
-
-  // MathJax v3 finishes async; hook it if present
-  if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
-    MathJax.startup.promise.then(hardRefresh).catch(() => {});
-  }
-})();
