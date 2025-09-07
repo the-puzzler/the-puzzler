@@ -193,3 +193,37 @@
     .container{ padding-bottom:8px }
   }
   
+
+/* --- Mobile header compact tweaks (phones) --- */
+@media (max-width:520px){
+  .header{
+    gap:8px;                   /* tighter gap between brand and nav */
+    padding-bottom:2px;        /* less vertical padding */
+    margin-bottom:6px;         /* less space under header */
+    align-items:center;
+  }
+
+  .brand{
+    font-size:.95rem;          /* smaller “the-puzzler” */
+    letter-spacing:.2px;
+    font-weight:700;
+  }
+
+  .badge{
+    padding:0 4px;             /* slimmer “Matteo” pill */
+    font-size:.75rem;
+  }
+
+  /* override previous mobile rule that forced nav to full width/new line */
+  .nav{
+    width:auto;                /* keep links on the same row */
+    margin-top:0;
+    margin-left:auto;          /* still push to the right */
+    gap:8px;                   /* reduce space between links */
+  }
+
+  .nav a{
+    font-size:.9rem;           /* slightly smaller link text */
+    text-underline-offset:2px;
+  }
+}
