@@ -123,7 +123,7 @@
      ========================================= */
   @media (max-width:560px){
     /* Prevent vertical page scroll on post view only */
-    /* body:has(.post.book-mode){ overflow-y:hidden } */
+    body:has(.post.book-mode){ overflow-y:hidden }
   
     .post.book-mode{
       position:relative;
@@ -193,5 +193,66 @@
     .container{ padding-bottom:8px }
   }
   
-
+  @media (max-width:560px){
+    .post.book-mode{
+      position:relative;
+      padding:0;
+      margin-bottom:0;
+    }
+  
+    .book{
+      display:grid;
+      grid-auto-flow:column;
+      grid-auto-columns:100%;
+      overflow-x:auto;
+      overflow-y:visible;                 /* allow vertical escape hatch */
+      scroll-snap-type:x mandatory;
+      -webkit-overflow-scrolling:touch;
+      touch-action:pan-x;
+      overscroll-behavior-x:contain;
+  
+      /* ✨ key change: don’t fix the height */
+      min-block-size: 100svh;             /* safe when URL bar visible */
+    }
+    @supports (height: 100dvh){
+      .book{ min-block-size: 100dvh; }    /* prefer dynamic viewport when available */
+    }
+  
+    .book::-webkit-scrollbar{ display:none }
+    .book{ scrollbar-width:none }
+  
+    .sheet{
+      scroll-snap-align:start;
+      padding:var(--sheet-pad-top) var(--sheet-pad-x)
+              calc(var(--sheet-pad-bottom) + var(--safe-bottom));
+      /* ✨ key change: let the sheet grow if it needs to */
+      min-block-size: inherit;
+      block-size: auto;
+      overflow: visible;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+    }
+  
+    /* fit media within the visible area without hard clipping everything else */
+    .post.book-mode img,
+    .post.book-mode video{
+      max-block-size: 80svh;
+      object-fit:contain;
+    }
+    @supports (height: 100dvh){
+      .post.book-mode img,
+      .post.book-mode video{ max-block-size: 80dvh; }
+    }
+  
+    /* tall code blocks can scroll internally */
+    .post.book-mode pre{
+      max-block-size: 80svh;
+      overflow:auto;
+    }
+    @supports (height: 100dvh){
+      .post.book-mode pre{ max-block-size: 80dvh; }
+    }
+  }
+  
 
