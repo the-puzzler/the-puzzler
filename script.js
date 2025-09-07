@@ -368,6 +368,37 @@ async function renderPost(){
   }
 }
 
+
+(function(){
+  const root = document.documentElement;
+
+  function updateViewportVars(){
+    const vv = window.visualViewport;
+    if (!vv) return; // graceful fallback
+
+    // Set the true visible height for the “page” sheets
+    root.style.setProperty('--sheet-h', `${Math.round(vv.height)}px`);
+
+    // Compute how much bottom chrome overlaps (URL bar, toolbars, etc.)
+    // window.innerHeight is the layout viewport; vv.height is the visible viewport.
+    // The difference is the UI chrome taking space.
+    const chromeBottom = Math.max(0, Math.round(window.innerHeight - vv.height));
+    root.style.setProperty('--chrome-bottom', `${chromeBottom}px`);
+  }
+
+  // Run on load and whenever the viewport changes (pinch zoom excluded by your layout)
+  if ('visualViewport' in window){
+    visualViewport.addEventListener('resize', updateViewportVars);
+    visualViewport.addEventListener('scroll', updateViewportVars); // bar animations sometimes fire as "scroll"
+  }
+  window.addEventListener('orientationchange', updateViewportVars);
+
+  // Initial
+  updateViewportVars();
+})();
+
+
+
 // -----------------------------
 // Init
 // -----------------------------

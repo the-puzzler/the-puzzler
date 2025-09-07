@@ -194,3 +194,18 @@
   }
   
 
+  :root{
+    --sheet-h: 100dvh;             /* initial */
+    --chrome-bottom: 0px;           /* added */
+  }
+  
+  @media (max-width:560px){
+    .sheet{
+      /* add chrome + safe-area to your existing padding */
+      padding-bottom: calc(var(--sheet-pad-bottom) + var(--safe-bottom) + var(--chrome-bottom));
+    }
+    .page-num{
+      bottom: calc(8px + var(--safe-bottom) + var(--chrome-bottom));
+    }
+  }
+  
