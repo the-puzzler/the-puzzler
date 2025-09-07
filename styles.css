@@ -1,0 +1,109 @@
+
+/* Retro-lean theme (no frameworks) */
+:root{
+  --bg: #0c0c0c;
+  --ink: #e6ffe6;
+  --accent: #6fff6f;
+  --dim: #a1caa1;
+  --link: #79f3ff;
+  --paper: #0f1a0f;
+  --border: #2c3c2c;
+  --shadow: rgba(0,0,0,.4);
+  --max-line: 68ch;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+html{font-size:16px}
+body{
+  margin:0;
+  color:var(--ink);
+  background: var(--bg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+  line-height:1.6;
+  text-rendering: optimizeLegibility;
+}
+/* faint scanline vibe */
+body:before{
+  content:"";
+  position:fixed; inset:0;
+  pointer-events:none;
+  background: repeating-linear-gradient(
+    to bottom, rgba(255,255,255,.05), rgba(255,255,255,.05) 1px,
+    transparent 1px, transparent 3px
+  );
+  mix-blend-mode: overlay;
+  opacity:.15;
+}
+a{color:var(--link); text-decoration:none}
+a:hover{text-decoration:underline}
+.container{
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.header{
+  display:flex; gap:16px; align-items:center; flex-wrap:wrap;
+  border-bottom:1px dashed var(--border);
+  padding-bottom:12px; margin-bottom:18px;
+}
+.brand{
+  font-size:1.25rem; letter-spacing:1px; color:var(--accent);
+  text-shadow:0 0 8px rgba(111,255,111,.2);
+}
+.badge{
+  border:1px solid var(--border);
+  padding:2px 8px; border-radius:6px; color:var(--dim);
+}
+.nav{margin-left:auto; display:flex; gap:12px}
+.nav a{
+  padding:4px 8px; border:1px solid var(--border); border-radius:6px;
+}
+.footer{
+  color:var(--dim); border-top:1px dashed var(--border); margin-top:24px;
+  padding-top:12px; font-size:.9rem;
+}
+
+/* The "page" frame makes reading feel like a book on phone.
+   It uses a 16:9-friendly width: the width never exceeds 56.25vh (16:9 ratio)
+   so on tall/portrait screens it reads like a single page. */
+.page{
+  margin: 16px auto;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 24px var(--shadow);
+  border-radius: 14px;
+  padding: clamp(14px, 3.5vw, 28px);
+  width: min(100%, 56.25vh, var(--max-line));
+}
+
+/* Lists */
+.list{list-style:none; padding:0; margin:0; display:grid; gap:12px}
+.item{
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background: linear-gradient(180deg, rgba(255,255,255,.03), transparent);
+}
+.item h3{margin:0 0 4px 0; font-size:1.05rem}
+.item p{margin:.25rem 0 0 0; color:var(--dim)}
+
+/* Blog post typography */
+.post h1{font-size:clamp(1.4rem, 4.5vw, 2rem); margin:.2rem 0 .6rem}
+.post h2{font-size:clamp(1.15rem, 3.8vw, 1.5rem); margin:1.2rem 0 .4rem}
+.post p, .post li{font-size:clamp(1rem, 3.5vw, 1.05rem)}
+.post img, .post video{max-width:100%; display:block; margin:12px auto; border-radius:10px; border:1px solid var(--border)}
+code, pre{
+  background:#0b120b; border:1px solid var(--border); border-radius:10px;
+}
+code{padding:.1rem .35rem}
+pre{padding:12px; overflow:auto}
+
+/* Tiny "retro-UI" helpers */
+.hr{border:none; height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent); margin:16px 0}
+.kbd{border:1px solid var(--border); padding:2px 6px; border-radius:6px; background:#0b120b}
+
+/* Mobile niceties */
+@media (max-width: 480px){
+  .nav{width:100%; margin:8px 0 0 0}
+  .brand{width:100%}
+}
