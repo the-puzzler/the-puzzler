@@ -269,3 +269,4 @@
     }
   }
   
+  .sheet{ padding-bottom: calc(var(--sheet-pad-bottom) + var(--safe-bottom) + 24px); }
