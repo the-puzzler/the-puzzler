@@ -205,4 +205,7 @@
       overflow:hidden;
     }
   }
+  .sheet{
+    padding-bottom: calc(var(--sheet-pad-bottom) + env(safe-area-inset-bottom, 0px));
+  }
   
