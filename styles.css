@@ -256,3 +256,16 @@
   }
   
 
+  @media (max-width:560px){
+    .book{
+      /* be less aggressive so vertical drags can win */
+      scroll-snap-type: x proximity;   /* was: x mandatory */
+      touch-action: pan-x;             /* prefer horizontal here */
+    }
+    .sheet{
+      /* but inside a page, allow normal vertical gestures */
+      touch-action: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+  
