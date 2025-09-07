@@ -193,17 +193,30 @@
     .container{ padding-bottom:8px }
   }
   
-/* Let the header overflow horizontally on small screens */
+/* Make the post scroll vertically; keep header from hijacking gestures */
 @media (max-width:560px){
-  .header{
-    flex-wrap:nowrap;                 /* don't wrap to a second line */
-    overflow-x:auto;                  /* allow horizontal scroll */
-    -webkit-overflow-scrolling:touch; /* smooth iOS scrolling */
-    scrollbar-width:none;             /* hide scrollbar (Firefox) */
+  /* 1) Header: don't scroll horizontally; allow vertical pan through */
+  .header{ 
+    overflow:visible; 
+    touch-action:pan-y;          /* vertical scroll passes through header */
   }
-  .header::-webkit-scrollbar{ display:none } /* hide scrollbar (WebKit) */
+  .brand, .nav{ white-space:normal } /* allow wrapping if needed */
 
-  /* Prevent internal wrapping so everything stays on one line */
-  .brand, .nav{ white-space:nowrap }
-  .nav{ min-width:max-content }       /* don't shrink links */
+  /* 2) Re-enable page vertical scroll even in book-mode */
+  body:has(.post.book-mode){
+    overflow-y:auto !important;  /* undo the lock */
+  }
+
+  /* 3) Let each sheet scroll if content is tall */
+  .post.book-mode .sheet{
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  /* 4) Stop horizontal paging from capturing swipes */
+  .book{
+    overflow-x:hidden;           /* disable sideways scroll */
+    scroll-snap-type:none;
+    touch-action:pan-y;          /* only vertical gestures */
+  }
 }
