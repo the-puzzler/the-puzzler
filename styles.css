@@ -236,37 +236,15 @@
   .nav { gap: 8px; font-size: 0.8rem; }
 }
 
-/* ==== Visual viewport patch (accept JS-provided values) ==== */
-:root{
-  /* JS will keep these fresh */
-  --sheet-h: 100dvh;          /* fallback if JS doesn’t run */
-  --chrome-bottom: 0px;       /* dynamic overlap from browser UI */
-  --header-h: 0px;            /* measured header height */
-}
 
-/* Use the computed height for book mode sheets */
-@media (max-width:560px){
-  .book{
-    height: calc(var(--sheet-h) - var(--header-h));
-  }
-  .sheet{
-    min-height: calc(var(--sheet-h) - var(--header-h));
-    max-height: calc(var(--sheet-h) - var(--header-h));
-    padding-bottom: calc(var(--sheet-pad-bottom) + var(--safe-bottom) + var(--chrome-bottom));
-  }
-  .page-num{
-    bottom: calc(8px + var(--safe-bottom) + var(--chrome-bottom));
-  }
-}
 
-/* Keep header single-line on phones to save vertical space */
-@media (max-width:560px){
-  .header{
-    align-items:center;
-    flex-wrap:nowrap;
-    gap:10px;
-  }
-  .brand{ font-size:.85rem }
-  .badge{ font-size:.68rem; padding:0 4px }
-  .nav{ gap:8px; font-size:.8rem; white-space:nowrap }
+
+#fs-btn{ font-size:1rem; border:1px solid #000; background:#fff; padding:2px 6px; }
+:fullscreen, :-webkit-full-screen { background:#fff; }
+:fullscreen body, :-webkit-full-screen body { margin:0; }
+:fullscreen .book, :-webkit-full-screen .book { height:100vh; }
+:fullscreen .sheet, :-webkit-full-screen .sheet {
+  max-height:100vh;
+  min-height:100vh;
+  overflow:hidden;  /* now it's safe to lock pages without clipping */
 }

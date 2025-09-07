@@ -368,51 +368,39 @@ async function renderPost(){
   }
 }
 
-// ==== Visual viewport fix: keep sheets inside the truly visible area ====
 (function(){
-  const root = document.documentElement;
-  const header = document.querySelector('.header');
+  const fsBtn = document.getElementById('fs-btn');
+  if(!fsBtn) return;
 
-  // rAF-throttled updater (smooth during URL bar animations)
-  let raf = null;
-  const schedule = () => {
-    if (raf) return;
-    raf = requestAnimationFrame(update);
+  function inFs(){
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+  async function enterFs(el){
+    try{
+      if (el.requestFullscreen) await el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    }catch(e){ /* silently ignore */ }
+  }
+  async function exitFs(){
+    try{
+      if (document.exitFullscreen) await document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }catch(e){}
+  }
+
+  const target = document.documentElement; // fullscreen the whole document
+  fsBtn.addEventListener('click', async () => {
+    if (inFs()) await exitFs(); else await enterFs(target);
+  });
+
+  const sync = () => {
+    const on = inFs();
+    fsBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    fsBtn.textContent = on ? '⤡' : '⤢'; // change icon
   };
-
-  function update(){
-    raf = null;
-
-    // 1) Visible viewport height (URL bar accounted for)
-    const vv = window.visualViewport;
-    const visibleH = Math.round((vv && vv.height) ? vv.height : window.innerHeight);
-
-    // 2) Layout viewport height (used to infer how much chrome overlaps)
-    const layoutH = Math.round(window.innerHeight);
-
-    // 3) Bottom chrome overlap (toolbars / URL bar)
-    const chromeBottom = Math.max(0, layoutH - visibleH);
-
-    // 4) Header height to subtract (so the "page" fits below it)
-    const headerH = header ? Math.round(header.getBoundingClientRect().height) : 0;
-
-    // Apply
-    root.style.setProperty('--sheet-h', `${visibleH}px`);
-    root.style.setProperty('--chrome-bottom', `${chromeBottom}px`);
-    root.style.setProperty('--header-h', `${headerH}px`);
-  }
-
-  // Listen to all the things that move/animate the browser chrome
-  if ('visualViewport' in window){
-    visualViewport.addEventListener('resize', schedule, {passive:true});
-    visualViewport.addEventListener('scroll', schedule, {passive:true}); // fires during URL bar animation
-  }
-  window.addEventListener('resize', schedule, {passive:true});
-  window.addEventListener('orientationchange', schedule, {passive:true});
-  window.addEventListener('pageshow', schedule, {passive:true}); // iOS back/forward cache
-
-  // Initial
-  schedule();
+  document.addEventListener('fullscreenchange', sync);
+  document.addEventListener('webkitfullscreenchange', sync);
+  sync();
 })();
 
 // -----------------------------
