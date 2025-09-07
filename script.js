@@ -369,6 +369,28 @@ async function renderPost(){
 }
 
 
+(function () {
+  const root   = document.documentElement;
+  const header = document.querySelector('.header');
+  const post   = document.querySelector('.post.book-mode');
+  if (!post) return;
+
+  function setSheetHeight() {
+    const vv = window.visualViewport;
+    const vh = vv ? vv.height : window.innerHeight;
+    const headerH = header ? header.getBoundingClientRect().height : 0;
+    const sheetH = vh - headerH;
+    root.style.setProperty('--sheet-h', sheetH + 'px');
+  }
+
+  // Run once and on every visual viewport change
+  setSheetHeight();
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', setSheetHeight);
+    window.visualViewport.addEventListener('scroll', setSheetHeight);
+  }
+  window.addEventListener('orientationchange', setSheetHeight);
+})();
 
 // -----------------------------
 // Init
