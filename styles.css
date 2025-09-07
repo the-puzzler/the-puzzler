@@ -193,40 +193,17 @@
     .container{ padding-bottom:8px }
   }
   
-
-/* --- Mobile header compact tweaks (phones) --- */
-@media (max-width:520px){
+/* Let the header overflow horizontally on small screens */
+@media (max-width:560px){
   .header{
-    gap:8px;                   /* tighter gap between brand and nav */
-    padding-bottom:2px;        /* less vertical padding */
-    margin-bottom:6px;         /* less space under header */
-    align-items:center;
+    flex-wrap:nowrap;                 /* don't wrap to a second line */
+    overflow-x:auto;                  /* allow horizontal scroll */
+    -webkit-overflow-scrolling:touch; /* smooth iOS scrolling */
+    scrollbar-width:none;             /* hide scrollbar (Firefox) */
   }
+  .header::-webkit-scrollbar{ display:none } /* hide scrollbar (WebKit) */
 
-  .brand{
-    font-size:.95rem;          /* smaller “the-puzzler” */
-    letter-spacing:.2px;
-    font-weight:700;
-  }
-
-  .badge{
-    padding:0 4px;             /* slimmer “Matteo” pill */
-    font-size:.75rem;
-  }
-
-  /* override previous mobile rule that forced nav to full width/new line */
-  .nav{
-    width:auto;                /* keep links on the same row */
-    margin-top:0;
-    margin-left:auto;          /* still push to the right */
-    gap:8px;                   /* reduce space between links */
-  }
-
-  .nav a{
-    font-size:.9rem;           /* slightly smaller link text */
-    text-underline-offset:2px;
-  }
-}
-@media (max-width:520px){
-  .container{ padding:10px 12px 8px }
+  /* Prevent internal wrapping so everything stays on one line */
+  .brand, .nav{ white-space:nowrap }
+  .nav{ min-width:max-content }       /* don't shrink links */
 }
