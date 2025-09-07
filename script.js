@@ -368,40 +368,7 @@ async function renderPost(){
   }
 }
 
-(function(){
-  const fsBtn = document.getElementById('fs-btn');
-  if(!fsBtn) return;
 
-  function inFs(){
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-  async function enterFs(el){
-    try{
-      if (el.requestFullscreen) await el.requestFullscreen();
-      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    }catch(e){ /* silently ignore */ }
-  }
-  async function exitFs(){
-    try{
-      if (document.exitFullscreen) await document.exitFullscreen();
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    }catch(e){}
-  }
-
-  const target = document.documentElement; // fullscreen the whole document
-  fsBtn.addEventListener('click', async () => {
-    if (inFs()) await exitFs(); else await enterFs(target);
-  });
-
-  const sync = () => {
-    const on = inFs();
-    fsBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    fsBtn.textContent = on ? '⤡' : '⤢'; // change icon
-  };
-  document.addEventListener('fullscreenchange', sync);
-  document.addEventListener('webkitfullscreenchange', sync);
-  sync();
-})();
 
 // -----------------------------
 // Init

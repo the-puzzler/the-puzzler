@@ -123,7 +123,7 @@
      ========================================= */
   @media (max-width:560px){
     /* Prevent vertical page scroll on post view only */
-    body:has(.post.book-mode){ overflow-y:hidden }
+    /* body:has(.post.book-mode){ overflow-y:hidden } */
   
     .post.book-mode{
       position:relative;
@@ -194,57 +194,4 @@
   }
   
 
-  :root{
-    --sheet-h: 100dvh;             /* initial */
-    --chrome-bottom: 0px;           /* added */
-  }
-  
- /* Compact header style */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: nowrap;      /* force single row */
-  padding-bottom: 2px;    /* tighter */
-  margin-bottom: 6px;
-}
 
-.brand {
-  font-size: 0.9rem;      /* smaller */
-  font-weight: 600;
-}
-
-.badge {
-  font-size: 0.7rem;      /* smaller */
-  padding: 0 4px;
-}
-
-.nav {
-  display: flex;
-  gap: 10px;              /* tighter spacing */
-  margin-left: auto;
-  font-size: 0.85rem;     /* slightly smaller links */
-  align-items: center;
-}
-
-.nav a {
-  white-space: nowrap;    /* keep links from wrapping */
-}
-@media (max-width: 560px) {
-  .brand { font-size: 0.8rem; }
-  .badge { font-size: 0.65rem; }
-  .nav { gap: 8px; font-size: 0.8rem; }
-}
-
-
-
-
-#fs-btn{ font-size:1rem; border:1px solid #000; background:#fff; padding:2px 6px; }
-:fullscreen, :-webkit-full-screen { background:#fff; }
-:fullscreen body, :-webkit-full-screen body { margin:0; }
-:fullscreen .book, :-webkit-full-screen .book { height:100vh; }
-:fullscreen .sheet, :-webkit-full-screen .sheet {
-  max-height:100vh;
-  min-height:100vh;
-  overflow:hidden;  /* now it's safe to lock pages without clipping */
-}
