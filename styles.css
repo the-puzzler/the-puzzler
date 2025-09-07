@@ -235,3 +235,12 @@
   .badge { font-size: 0.65rem; }
   .nav { gap: 8px; font-size: 0.8rem; }
 }
+
+:root {
+  --sheet-h: 100svh; /* "small viewport height" = when URL bar is fully visible */
+}
+
+@supports (height: 100dvh) {
+  /* Fallback to dynamic if available */
+  :root { --sheet-h: 100dvh; }
+}
