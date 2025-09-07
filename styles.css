@@ -236,11 +236,37 @@
   .nav { gap: 8px; font-size: 0.8rem; }
 }
 
-:root {
-  --sheet-h: 100svh; /* "small viewport height" = when URL bar is fully visible */
+/* ==== Visual viewport patch (accept JS-provided values) ==== */
+:root{
+  /* JS will keep these fresh */
+  --sheet-h: 100dvh;          /* fallback if JS doesn’t run */
+  --chrome-bottom: 0px;       /* dynamic overlap from browser UI */
+  --header-h: 0px;            /* measured header height */
 }
 
-@supports (height: 100dvh) {
-  /* Fallback to dynamic if available */
-  :root { --sheet-h: 100dvh; }
+/* Use the computed height for book mode sheets */
+@media (max-width:560px){
+  .book{
+    height: calc(var(--sheet-h) - var(--header-h));
+  }
+  .sheet{
+    min-height: calc(var(--sheet-h) - var(--header-h));
+    max-height: calc(var(--sheet-h) - var(--header-h));
+    padding-bottom: calc(var(--sheet-pad-bottom) + var(--safe-bottom) + var(--chrome-bottom));
+  }
+  .page-num{
+    bottom: calc(8px + var(--safe-bottom) + var(--chrome-bottom));
+  }
+}
+
+/* Keep header single-line on phones to save vertical space */
+@media (max-width:560px){
+  .header{
+    align-items:center;
+    flex-wrap:nowrap;
+    gap:10px;
+  }
+  .brand{ font-size:.85rem }
+  .badge{ font-size:.68rem; padding:0 4px }
+  .nav{ gap:8px; font-size:.8rem; white-space:nowrap }
 }
