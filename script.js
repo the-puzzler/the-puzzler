@@ -369,28 +369,6 @@ async function renderPost(){
 }
 
 
-(function () {
-  const root   = document.documentElement;
-  const header = document.querySelector('.header');
-  const post   = document.querySelector('.post.book-mode');
-  if (!post) return;
-
-  function setSheetHeight() {
-    const vv = window.visualViewport;
-    const vh = vv ? vv.height : window.innerHeight;
-    const headerH = header ? header.getBoundingClientRect().height : 0;
-    const sheetH = vh - headerH;
-    root.style.setProperty('--sheet-h', sheetH + 'px');
-  }
-
-  // Run once and on every visual viewport change
-  setSheetHeight();
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', setSheetHeight);
-    window.visualViewport.addEventListener('scroll', setSheetHeight);
-  }
-  window.addEventListener('orientationchange', setSheetHeight);
-})();
 
 // -----------------------------
 // Init
@@ -399,3 +377,123 @@ addEventListener('DOMContentLoaded', () => {
   renderList();
   renderPost();
 });
+
+
+(function viewportLock() {
+  const root    = document.documentElement;
+  const header  = document.querySelector('.header');
+  const post    = document.querySelector('.post.book-mode');
+  const content = document.querySelector('#post-content');
+  if (!post) return;
+
+  // util: parse "12px" -> 12
+  const px = v => (v ? parseFloat(String(v)) || 0 : 0);
+
+  // read CSS safe-area from your :root variable if present
+  function getSafeBottom() {
+    const cs = getComputedStyle(root);
+    // if you set --safe-bottom: env(safe-area-inset-bottom), this will resolve
+    return px(cs.getPropertyValue('--safe-bottom')) || 0;
+  }
+
+  let raf = 0;
+  let chasing = 0;
+
+  function measureAndSet() {
+    // visible height that respects the current URL bar state
+    const vv = window.visualViewport;
+    const visible = vv ? vv.height : window.innerHeight;
+
+    // header height can change after fonts load / reflow
+    const headerH = header ? header.getBoundingClientRect().height : 0;
+
+    // tiny fudge to avoid off-by-1 clipping (round down and subtract 1)
+    const h = Math.max(0, Math.floor(visible - headerH) - 1);
+
+    root.style.setProperty('--sheet-h', h + 'px');
+  }
+
+  // chase the toolbar animation for a short burst
+  function burstRecalc(ms = 800) {
+    const start = performance.now();
+    cancelAnimationFrame(chasing);
+    const tick = () => {
+      measureAndSet();
+      if (performance.now() - start < ms) {
+        chasing = requestAnimationFrame(tick);
+      }
+    };
+    chasing = requestAnimationFrame(tick);
+  }
+
+  // schedule after *two* paints so layout/URL bar settles a bit
+  function afterFirstRealPaint(fn) {
+    requestAnimationFrame(() => requestAnimationFrame(fn));
+  }
+
+  function hardRefresh() {
+    measureAndSet();
+    burstRecalc();
+  }
+
+  // --- event wiring -------------------------------------------------
+
+  // initial: wait for DOM, fonts, and first paint
+  function init() {
+    afterFirstRealPaint(hardRefresh);
+    // fonts can change header metrics
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(hardRefresh).catch(() => {});
+    }
+    // images/videos inside the post can change flow (even if we clamp overflow)
+    content?.querySelectorAll('img, video').forEach(el => {
+      el.addEventListener('load', hardRefresh, { once: true });
+      el.addEventListener('loadedmetadata', hardRefresh, { once: true });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+
+  // full page load / bfcache restore
+  window.addEventListener('load', hardRefresh);
+  window.addEventListener('pageshow', hardRefresh);
+  window.addEventListener('orientationchange', hardRefresh);
+
+  // follow URL bar changes
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', hardRefresh, { passive: true });
+    window.visualViewport.addEventListener('scroll', hardRefresh, { passive: true });
+  } else {
+    window.addEventListener('resize', hardRefresh, { passive: true });
+    window.addEventListener('scroll', hardRefresh, { passive: true });
+  }
+
+  // header size can change with wraps; observe it
+  if (window.ResizeObserver && header) {
+    const ro = new ResizeObserver(hardRefresh);
+    ro.observe(header);
+  }
+
+  // your app injects post HTML into #post-content — watch for that
+  if (window.MutationObserver && content) {
+    const mo = new MutationObserver(() => {
+      // new nodes? recompute now and keep chasing for a bit
+      hardRefresh();
+      // attach load listeners for any newly inserted media
+      content.querySelectorAll('img, video').forEach(el => {
+        el.addEventListener('load', hardRefresh, { once: true });
+        el.addEventListener('loadedmetadata', hardRefresh, { once: true });
+      });
+    });
+    mo.observe(content, { childList: true, subtree: true });
+  }
+
+  // MathJax v3 finishes async; hook it if present
+  if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
+    MathJax.startup.promise.then(hardRefresh).catch(() => {});
+  }
+})();

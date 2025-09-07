@@ -208,4 +208,23 @@
   .sheet{
     padding-bottom: calc(var(--sheet-pad-bottom) + env(safe-area-inset-bottom, 0px));
   }
+  @media (max-width:560px){
+    body:has(.post.book-mode){ overflow-y:hidden } /* keep the book vibe */
+  
+    /* one true page height, supplied by JS */
+    .book{ height: var(--sheet-h) }
+    .sheet{
+      height: var(--sheet-h);
+      overflow:hidden;
+      padding-bottom: calc(var(--sheet-pad-bottom) + env(safe-area-inset-bottom, 0px));
+    }
+  
+    /* make the header a known, non-overlapping height */
+    .header{
+      position: sticky;
+      top: env(safe-area-inset-top, 0px);
+      z-index: 10;
+      background: var(--bg);
+    }
+  }
   
