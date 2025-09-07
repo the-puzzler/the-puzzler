@@ -1,109 +1,191 @@
-
-/* Retro-lean theme (no frameworks) */
-:root{
-  --bg: #0c0c0c;
-  --ink: #e6ffe6;
-  --accent: #6fff6f;
-  --dim: #a1caa1;
-  --link: #79f3ff;
-  --paper: #0f1a0f;
-  --border: #2c3c2c;
-  --shadow: rgba(0,0,0,.4);
-  --max-line: 68ch;
+/* Black & White — ultra clean, no floating card */
+:root {
+  --bg: #ffffff;
+  --ink: #000000;
+  --ink-dim: #333333;
+  --rule: #000000;
+  --text-max: 48rem; /* ~768px */
 }
-*{box-sizing:border-box}
-html,body{height:100%}
-html{font-size:16px}
-body{
-  margin:0;
-  color:var(--ink);
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+html { font-size: 16px; }
+body {
   background: var(--bg);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
-  line-height:1.6;
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
+  line-height: 1.6;
   text-rendering: optimizeLegibility;
 }
-/* faint scanline vibe */
-body:before{
-  content:"";
-  position:fixed; inset:0;
-  pointer-events:none;
-  background: repeating-linear-gradient(
-    to bottom, rgba(255,255,255,.05), rgba(255,255,255,.05) 1px,
-    transparent 1px, transparent 3px
-  );
-  mix-blend-mode: overlay;
-  opacity:.15;
-}
-a{color:var(--link); text-decoration:none}
-a:hover{text-decoration:underline}
-.container{
-  max-width: 980px;
+
+/* container = page frame width; left-aligned, not centered card */
+.container {
+  max-width: 1200px;      /* optional: a little wider */
   margin: 0 auto;
-  padding: 24px;
+  padding-inline: clamp(16px, 4vw, 40px);
 }
-.header{
-  display:flex; gap:16px; align-items:center; flex-wrap:wrap;
-  border-bottom:1px dashed var(--border);
-  padding-bottom:12px; margin-bottom:18px;
+/* header: simple rule, no pills/buttons */
+.header {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 8px;
+  margin-bottom: 20px;
 }
-.brand{
-  font-size:1.25rem; letter-spacing:1px; color:var(--accent);
-  text-shadow:0 0 8px rgba(111,255,111,.2);
+.brand {
+  font-size: 1.125rem;
+  letter-spacing: .5px;
+  font-weight: 700;
 }
-.badge{
-  border:1px solid var(--border);
-  padding:2px 8px; border-radius:6px; color:var(--dim);
+.badge {
+  padding: 0 6px;
+  border: 1px solid var(--rule);
+  border-radius: 0;  /* square — old web */
+  font-size: .9rem;
 }
-.nav{margin-left:auto; display:flex; gap:12px}
-.nav a{
-  padding:4px 8px; border:1px solid var(--border); border-radius:6px;
+.nav { margin-left: auto; display: flex; gap: 14px; }
+.nav a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
-.footer{
-  color:var(--dim); border-top:1px dashed var(--border); margin-top:24px;
-  padding-top:12px; font-size:.9rem;
-}
-
-/* The "page" frame makes reading feel like a book on phone.
-   It uses a 16:9-friendly width: the width never exceeds 56.25vh (16:9 ratio)
-   so on tall/portrait screens it reads like a single page. */
-.page{
-  margin: 16px auto;
-  background: var(--paper);
-  border: 1px solid var(--border);
-  box-shadow: 0 6px 24px var(--shadow);
-  border-radius: 14px;
-  padding: clamp(14px, 3.5vw, 28px);
-  width: min(100%, 56.25vh, var(--max-line));
+.nav a:hover {
+  text-decoration-thickness: 2px;
 }
 
-/* Lists */
-.list{list-style:none; padding:0; margin:0; display:grid; gap:12px}
-.item{
-  padding:10px 12px;
-  border:1px solid var(--border);
-  border-radius:10px;
-  background: linear-gradient(180deg, rgba(255,255,255,.03), transparent);
+/* content column: left-aligned, no background box */
+.page {
+  max-width: 48rem;       /* your reading width (~768px) */
+  width: 100%;
+  margin-left: auto;      /* center the column */
+  margin-right: auto;     /* center the column */
+  padding: 0;             /* keep it flat, no card */
+  border: 0;
+  background: transparent;
 }
-.item h3{margin:0 0 4px 0; font-size:1.05rem}
-.item p{margin:.25rem 0 0 0; color:var(--dim)}
 
-/* Blog post typography */
-.post h1{font-size:clamp(1.4rem, 4.5vw, 2rem); margin:.2rem 0 .6rem}
-.post h2{font-size:clamp(1.15rem, 3.8vw, 1.5rem); margin:1.2rem 0 .4rem}
-.post p, .post li{font-size:clamp(1rem, 3.5vw, 1.05rem)}
-.post img, .post video{max-width:100%; display:block; margin:12px auto; border-radius:10px; border:1px solid var(--border)}
-code, pre{
-  background:#0b120b; border:1px solid var(--border); border-radius:10px;
+/* intro bits */
+h1, h2, h3 { margin: .4rem 0 .6rem; }
+h1 { font-size: clamp(1.6rem, 4.5vw, 2.2rem); }
+h2 { font-size: clamp(1.25rem, 3.5vw, 1.5rem); }
+h3 { font-size: clamp(1.05rem, 3vw, 1.2rem); }
+p, li { font-size: clamp(1rem, 3.2vw, 1.0625rem); }
+
+/* link style everywhere */
+a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+
+/* list of posts = simple vertical list with rules */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
-code{padding:.1rem .35rem}
-pre{padding:12px; overflow:auto}
-
-/* Tiny "retro-UI" helpers */
-.hr{border:none; height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent); margin:16px 0}
-.kbd{border:1px solid var(--border); padding:2px 6px; border-radius:6px; background:#0b120b}
-
-/* Mobile niceties */
-@media (max-width: 480px){
-  .nav{width:100%; margin:8px 0 0 0}
-  .brand{width:100%}
+.item {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
 }
+.item:first-child { border-top: 1px solid var(--rule); }
+.item h3 { margin: 0 0 4px 0; }
+.item small { color: var(--ink-dim); }
+.item p { margin: .25rem 0 0 0; color: var(--ink-dim); }
+
+/* post body */
+.post h1 { margin-top: 0; }
+.post img, .post video {
+  max-width: 100%;
+  display: block;
+  margin: 12px 0;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+}
+
+/* code blocks black/white */
+code, pre {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+}
+code { padding: .05rem .3rem; }
+pre { padding: 10px; overflow: auto; }
+
+/* divider */
+.hr {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 16px 0;
+}
+
+/* footer: just a rule and small type */
+.footer {
+  border-top: 1px solid var(--rule);
+  margin-top: 20px;
+  padding-top: 10px;
+  color: var(--ink-dim);
+  font-size: .9rem;
+}
+
+/* mobile tweaks — keep left aligned, ensure nice side padding via container */
+@media (max-width: 520px) {
+  .nav { width: 100%; margin-top: 6px; }
+  .brand { width: auto; }
+}
+
+
+/* --- Mobile book swiper with SOFT page breaks --- */
+@media (max-width: 560px) {
+  .post.book-mode {
+    display: block;
+    padding: 0;
+    position: relative;
+  }
+
+  .book {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 0;
+  }
+  .book::-webkit-scrollbar { display: none; }
+  .book { scrollbar-width: none; }
+
+  .sheet {
+    scroll-snap-align: start;
+    padding: 18px 16px 40px;   /* bottom room for page number */
+    min-height: 88vh;
+    max-height: 88vh;          /* cap to viewport-ish page height */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  /* if a single section is too tall, allow vertical scroll inside that sheet */
+  .sheet.sheet--overflow {
+    overflow-y: auto;
+  }
+
+  /* tiny page number badge */
+  .page-num {
+    position: fixed;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    font-size: 0.85rem;
+    opacity: 0.75;
+    background: #fff;
+    color: #000;
+    padding: 2px 8px;
+    border: 1px solid #000;
+    border-radius: 12px;
+    z-index: 5;
+  }
+
+  /* hide the actual <hr> lines in book-mode (we use them as soft breaks) */
+  .post.book-mode hr { display: none; }
+}
+

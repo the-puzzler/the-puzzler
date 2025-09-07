@@ -1,0 +1,97 @@
+<h1>Self-Organising Text</h1>
+<p>
+  Inspired by self-organising cellular automata and the broader idea that <em>simple local rules</em> can yield <em>emergent global intelligence</em>.
+  <br>
+  <br>
+  Here, I explore how self-organisation scales — starting from a physical basis in the Ising model.
+  Then, we will jump into the text space and see if its possible for textual tokens, <em>looking only at their neighbours</em>, to organise into coherent text.
+  <br>
+  <br>
+  I took a lot of inspiration from <a href="https://francesco215.github.io/Language_CA/" target="_blank" rel="noopener">
+    this</a> post by Francesco Sacco. If you find yourself wishing for a deeper understanding on emergence and the importance of the Ising model, I highly recommend you check it out.
+</p>
+
+<hr>
+
+<h2>Introduction: Self-organisation</h2>
+<p>
+  Self-organisation is a key principle in complex systems: local interactions can produce
+  surprising global order. Examples range from flocking birds to financial markets.
+</p>
+<ul>
+  <li><strong>Cellular automata</strong> → show how local update rules can produce global patterns.</li>
+  <li><strong>Markets</strong> → buyers/sellers act locally, prices emerge globally.</li>
+  <li><strong>Neural systems</strong> → synapses adapt locally, intelligence emerges globally.</li>
+</ul>
+
+<hr>
+
+<h2>The Ising Model</h2>
+<p>
+  The Ising model gives a clean mathematical framework for how local interactions
+  can lead to collective alignment. In one dimension, the conventional result says
+  no spontaneous magnetisation occurs — but with <em>interaction ranges above a critical threshold</em>,
+  self-organisation <em>is</em> possible.
+</p>
+
+<p>Equation (rendered with LaTeX):</p>
+<p>
+  $$ H = -J \sum_{i=1}^N \sum_{r=1}^R s_i s_{i+r} - h \sum_{i=1}^N s_i $$
+</p>
+
+<p>
+  where \( s_i \in \{-1,+1\} \) are spins, \( J \) is the coupling constant, \( h \) an external field,
+  and \( R \) the interaction range.
+</p>
+
+<hr>
+
+<h2>Derivation & Critical Range</h2>
+<p>
+  A short derivation (details to come). The key insight is that increasing the interaction
+  range \( R \) above a critical threshold allows stable ordering in 1D.
+</p>
+
+<pre><code>
+# (you can later add LaTeX blocks like this for step-by-step derivations)
+</code></pre>
+
+<hr>
+
+
+<!-- Placeholder for interactive content -->
+<div class="interactive">
+  <p>[Interactive figure coming soon]</p>
+</div>
+
+<hr>
+
+<h2>Experiments & Examples</h2>
+<p>
+  Some neat simulations:
+</p>
+<ul>
+  <li>Short-range interactions → disorder</li>
+  <li>Above critical range → spontaneous order</li>
+</ul>
+
+<!-- Embed images/plots -->
+<img src="../assets/ising_example.png" alt="Ising simulation result">
+
+<hr>
+
+<h2>Play With It Yourself</h2>
+<p>
+  You can explore the model live:
+</p>
+<p>
+  <a href="https://gradio.app/your-demo-link" target="_blank">👉 Launch Gradio Demo</a>
+</p>
+
+<hr>
+
+<h2>Reflections</h2>
+<p>
+  Self-organisation is a general principle — whether in physics, markets, or language models.
+  Local rules, scaled properly, can produce unexpected intelligence.
+</p>
