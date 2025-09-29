@@ -1,0 +1,24 @@
+/* micro-modelling.css */
+/* Placeholder for Microbiome Modelling post-specific styles */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-responsive table {
+  min-width: 600px;
+  width: 100%;
+}
+
+.img-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.img-scroll img {
+  display: block;
+  width: 800px; /* or larger if needed */
+  max-width: none;
+  height: auto;
+  margin: 20px auto;
+}

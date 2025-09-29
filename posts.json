@@ -2,7 +2,13 @@
   {
     "title": "Self-Organising Text",
     "date": "2025-09-07",
-    "path": "posts/self-org-text.html",
+    "path": "posts/self-org-text/self-org-text.html",
     "description": "Cellular Automata Inspired Self Organising Text"
+  },
+  {
+    "title": "Microbiome Modelling",
+    "date": "2025-09-29",
+    "path": "posts/micro-modelling/micro-modelling.html",
+    "description": "Microbiome World Modelling."
   }
 ]

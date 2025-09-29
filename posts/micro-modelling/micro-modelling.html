@@ -1,0 +1,305 @@
+<h1>Microbiome World Modelling</h1>
+<p>
+  Did you know that on average, a human body contains about 38 trillion bacteria, which is more than the 
+  number of human cells?
+
+  <br>
+  <br>
+
+  The human microbiome has been implicated in many negative and positive states. For example, dysboisis (poor regulation)
+  of the gut microbiome is linked to irritable bowel syndrome. On the other hand, super microbiome regulation has been linked to
+  greater intelligence and better health outcomes.
+
+  <br>
+  <br>
+
+  Clearly there is something to study here, and even better, model. As of today, the space is wide open.
+  In this post, I will outline my research on this topic and attempts to create a microbiome world model
+  that understands the complexities of the abstract interactions between microbes across as many contexts
+  as possible. This should allow the model to build a general understanding of micorbial interactions.
+</p>
+
+<hr>
+
+<h2>What is a   Microbiome?</h2>
+<p>
+    A microbiome is a community of microorganisms, including bacteria, viruses, fungi, and other microbes, that inhabit a specific environment. 
+    In humans, the microbiome primarily resides in the gut but can also be found on the skin, in the mouth, and in other areas of the body.
+    Basically, anywhere where there is a surface or crevis, there is a microbiome. The more protected it is from the environment,
+    the more embedded and stable that microbiome will be.
+
+    <br>
+    <br>
+
+    They interact with each other in complex ways and form communities with emergent properties. For example,
+    in your mouth, bacteria work toether to form a biofilm that protects them from the environment and gives them
+    a safe space to consume nutrients.
+
+    <img src="posts/micro-modelling/micro-modelling-imgs/biofilm-img.jpg" alt="Biofilm example" style="display:block; margin:20px auto; max-width:100%; height:auto;">
+
+</p>
+
+<hr>
+
+<h2>What can we aim to achieve?</h2>
+
+<p>
+    If we can build a model that understands the interactions between microbes, we can:
+    <ul>
+        <li>Use its internal representations for down stream tasks like disease prediction</li>
+        <li>Predict which microbes can and cant live together</li>
+        <li>Use that information to create targeted pro-biotics to displace unwanted microbes</li>
+    </ul>    
+    I like to think about it like this: imagine swallowing a pill that contains the A-team of microbes
+    designed specifically for your sampled gut microbiome to displace the bacteria causing you problems.
+    <br>
+    <br>
+    Current methods struggle with this, because just sending random good microbes into the gut
+    is not enough. The microbes need to be able to outcompete the existing ones given the exact context
+    of *your* gut.
+</p>
+
+<hr>
+
+<h1>Data</h1>
+
+<p>
+    Before we can start modelling we need some data.
+    For this project I have been using data from <a href="https://microbeatlas.org/landing" target="_blank" rel="noreferrer">MicrobeAtlas</a>
+    (<a href="https://www.biorxiv.org/content/10.1101/2025.07.18.665519v1" target="_blank" rel="noreferrer">paper</a>).
+
+    <br>
+    <br>
+    MicrobeAtlas is the largest microbiome database to date. It contains millions of global samples from various environments,
+    including human, animal, and environmental samples. For each sample we also have a lot of textual metadata we can make use of.
+    <br>
+    <br>
+    A sample consists of a list of present microbes and their abundances (how many there were) but we will only treat them as present/abscent here.
+</p>
+
+<hr>
+
+<h2>Representation Problem</h1>
+
+<p> 
+    One of the crucial bottlenecks that this field has faced is the representation problem.
+    Microbial datasets typically consist of thousands of different OTUs (Microbes) but few samples.
+    In our case, given the global coverage we have ~ 100,000 OTUs. You can imagine then that any attempt to learn
+    embeddings to represent these microbes will cause a parameter explosion. We cant afford this because our sample
+    count is only in the ~3M range.
+    <br>
+    <br>
+    Any linear layer MLP acting on the full binary presence absence input would have to deal with incredbily sparse
+    inputs and inefficient parameter usage.
+</p>
+
+<div class="table-responsive">
+    <table style=" border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th style="border: 1px solid #ccc; padding: 8px;">Architecture</th>
+                <th style="border: 1px solid #ccc; padding: 8px;">Parameters</th>
+                <th style="border: 1px solid #ccc; padding: 8px;">Computation</th>
+                <th style="border: 1px solid #ccc; padding: 8px;">Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="border: 1px solid #ccc; padding: 8px;"><strong>MLP (dense)</strong></td>
+                <td style="border: 1px solid #ccc; padding: 8px;">(F × h + L × h²)</td>
+                <td style="border: 1px solid #ccc; padding: 8px;">F × h</td>
+                <td style="border: 1px solid #ccc; padding: 8px;">All 100k features processed</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ccc; padding: 8px;"><strong>Transformer + learned embeddings</strong></td>
+                <td style="border: 1px solid #ccc; padding: 8px;">(F × d + 4L d²)</td>
+                <td style="border: 1px solid #ccc; padding: 8px;">F × d</td>
+                <td style="border: 1px solid #ccc; padding: 8px;">Embedding matrix dominates</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ccc; padding: 8px;"><strong>Transformer + fixed embeddings</strong></td>
+                <td style="border: 1px solid #ccc; padding: 8px;">(4L d²)</td>
+                <td style="border: 1px solid #ccc; padding: 8px;">S × d</td>
+                <td style="border: 1px solid #ccc; padding: 8px;">Only present features!</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<p>
+    Where:
+    <ul>
+        <li><strong>F</strong> = total number of features (e.g., 100,000 microbes)</li>
+        <li><strong>S</strong> = number of present features in a sample (sparse, typically much less than F)</li>
+        <li><strong>d</strong> = embedding dimension</li>
+        <li><strong>h</strong> = hidden layer dimension</li>
+        <li><strong>L</strong> = number of layers</li>
+    </ul>
+</p>
+
+<hr>
+
+<h2>Representation Solution</h2>
+<p>
+    To solve this problem, I thought to myself: 'I wonder if there is some common language that can be used to 
+    describe a microbe, like characters for text.' But of course, microbes, do have a common descriptive language,
+    the same language. It's their DNA: A, T, C, G.
+    <br>
+    <br>
+    We could use DNA language models to embed 16S rRNA sequences (widely accepted way of identifying a unique microbe) into a common space.
+    This way, we can use the parameter efficient transformer archteciture without requiring learned embeddings.
+    Now the input space looks like this:
+    <img src="posts/micro-modelling/micro-modelling-imgs/input-space.jpg" alt="16S input space" style="display:block; margin:20px auto; max-width:100%; height:auto;">
+    The different clusters represent Archea (e.g. Methanobrevibacter), Bacteria (e.g. lactobacillus), and Eukaryota (e.g. human, amoeba, etc.).
+
+</p>
+
+<hr>
+<h1> Model Objective</h1>
+<div class="img-scroll">
+  <img src="posts/micro-modelling/micro-modelling-imgs/model-setup.png" alt="Model Architecture" style="display:block; margin:20px auto; max-width:none; height:auto; width:800px;">
+</div>
+<p>
+    The model was trained using a CELoss objective to predict the presence/absence of microbes in a sample given the other present microbes.
+    In practice, this means the model sees a putative sample: this includes the DNA embeddings of present bacteria, and textual metadata (embedded with LLM).
+    On each one of these embeddings it must then output a confidence in how likly it thought that embedding to be truly part of this sample.
+    <br>
+    <br>
+    Thus, to make this difficult, I used a bernouli noising strategy. Adding embeddings to confuse the model and as such make it learn the true relationships.
+</p>
+<hr>
+<p>
+
+    <strong>Interesting Note:</strong> Using gaussian noise on the DNA embeddings made the task trivial. This
+    likely is the result of the fact that the embeddings from LLM style masked token prediction objectives sit on a very
+    tight and un-mollified manifold. I also found that I could leverage the similairty of embeddings to interesting effect.
+    For example, if I added a microbe that was very similair to an existing one, the task again became far too easy. Thus I adapted the noising to use both
+    purposfully similair microbes at times and at other times random.
+</p>
+
+<hr>
+<h1>Training</h1>
+<p>
+    The model was trained on ~2M samples from MicrobeAtlas. I used a batch size of 32 and trained for 1 epoch.
+    The model was trained using AdamW with a learning rate of 1e-4. The model was trained on a single
+    V100 for about 7 hours. I trained two versions of the model. Large:800k params, and small:50k params.
+</p>
+<img src="posts/micro-modelling/micro-modelling-imgs/loss-vs-batch.png" alt="Loss Curve" style="display:block; margin:20px auto; max-width:100%; height:auto;">
+
+<hr>
+<h1>Results/Eval</h1>
+<p> 
+    Now for the interesting part. What did the model learn?
+    First lets look at how the models representation changes as we pass a noised sample through it.
+    Below is a UMAP for first the small then the large model. The first subplot on both represents the DNA space.
+</p>
+<div class="img-scroll">
+    <img src="posts/micro-modelling/micro-modelling-imgs/small-layers.jpg" alt="UMAP comparison" style="display:block; margin:20px auto;  height:auto;">
+    <img src="posts/micro-modelling/micro-modelling-imgs/large-layers.jpg" alt="UMAP comparison" style="display:block; margin:20px auto; height:auto;">
+</div>
+
+
+<hr>
+<p>
+    Wow, so we can clearly see that the larger model has a much better go at figuring out which microbes
+    were original and which were added. In these figures the triangles represent the noise microbes and the colours
+    represents the final logits they were assigned. We can clearly see in both cases, the triangles are relativly
+    evenly distrubuted in the DNA space, but as the model processes them, they are slowly removed.
+</p>
+
+<hr>
+<h2>Gingivitis Eval</h2>
+
+<p>
+    The next question I have is, can we use this model, that was never trained on any dyanmics or concept of time, to predict which
+    microbes will be present at another time step and which will not? I call this test: 'drop-out or colonise?'
+
+    <br>
+    <br>
+
+    To do this we will be using a held out gingivits dataset. This dataset consists of samples from patients with induced gingivitis over
+    the course of a month.
+</p>
+<h3>Drop-Out Test</h3>
+<div class="img-scroll">
+    <img src="posts/micro-modelling/micro-modelling-imgs/drop-out-test.png" alt="Dropout ROC" style="display:block; margin:20px auto; max-width:none; height:auto; width:800px;">
+</div>
+
+<p>
+    Wow again! Not only is the larger model (latter figures) better at this task, but both models are doing
+    far better than random chance! This is very exciting because it means the model has learned some
+    underlying representation of how microbes interact with each other. This is despite never being trained
+    on any temporal data. In otherwords: given a set of microbes, the model can predict which ones are likely to drop out
+    in the future/past. Hence the model has learned: given this set of microbes: these ones are stable and these ones are not.
+</p>
+
+<h3>Colonise Test</h3>
+<div class="img-scroll">
+    <img src="posts/micro-modelling/micro-modelling-imgs/colonise-test.png" alt="Colonise ROC" style="display:block; margin:20px auto; max-width:none; height:auto; width:800px;">
+</div>
+<p>
+    Another good result! Not quite as good but this test is much harder. Here the model must predict which microbes will newly appear
+    in the next time step. I tested this by taking microbes that were present in other samples but not at a given time point $t$.
+    Then I would place the microbes into $t$ and see if the model predicting higher logits on these putative microbes corresponded with
+    higher liklihood of that microbe appearing in the future.
+</p>
+
+<hr>
+<h2>Infants Eval</h2>
+<p>
+    Lets change tack here and see whether the final embeddings produced by the model might also be good for something.
+    To do this, I will use a dataset of samples taken from infants at different ages, some born by C-section and some vaginally.
+    The goal here is to see whether the models learned embeddings can make this task easier.
+    <br>
+    <br>
+    First lets take a look at a PCA of the embeddings produced by our models for the samples, this will show us
+    whether the model has learned any interesting structure without any fine-tuning or clasification heads.
+</p>
+
+<hr>
+<img src="posts/micro-modelling/micro-modelling-imgs/3d-pca.jpg" alt="PCA of embeddings" style="display:block; margin:20px auto; height:auto; width:350px;">
+
+<img src="posts/micro-modelling/micro-modelling-imgs/2d-pca.jpg" alt="3D PCA of embeddings" style="display:block; margin:20px auto; height:auto; width:350px;">
+<hr>
+<p>
+    The first PCA comes from the small model and the second from the large model. I used 2d for the large model
+    because it was easier to understand. In both cases we can see that the model has learned some very obvious structure.
+    It clearly inherently differentiates between the different age groups and shows an almost monotonic time progression between them.
+    Again this data was totally unseen.
+
+    <br>
+    <br>
+    Now lets see if we can use these embeddings to classify whether an infant was born by C-section or vaginally.
+    I did a 5x cross validation with a logistic regression head on top of the frozen embeddings.
+</p>
+<div class="img-scroll">
+    <img src="posts/micro-modelling/micro-modelling-imgs/small-infants.jpg"  style="display:block; margin:20px auto;height:auto; width:500px;">
+    <img src="posts/micro-modelling/micro-modelling-imgs/large-infants.jpg" style="display:block; margin:20px auto;height:auto; width:500px;">
+</div>
+
+<p> 
+    Again we see that the larger model is better, but both models are doing far better than random chance.
+    For comparison I show the results of a comparable method from MGM (<a href="https://www.biorxiv.org/content/10.1101/2024.12.30.630825v1.full" target="_blank" rel="noreferrer">paper</a>).
+    Their model has ~2M parameters and they fine-tuned on the infants data.
+</p>
+<div class="img-scroll">
+    <img src="posts/micro-modelling/micro-modelling-imgs/mgm-infants.png" style="display:block; margin:20px auto;height:auto; width:500px;">
+</div>
+<hr>
+
+<h1>Conclusion</h1>
+<p>
+    In this post I have outlined my work on building a microbiome world model.
+    The model was trained on millions of samples from MicrobeAtlas and was able to learn
+    interesting representations of microbial interactions. These representations were then
+    shown to be useful for predicting which microbes would drop out or colonise in a held out
+    gingivitis dataset. Furthermore, the final embeddings produced by the model were shown to be
+    useful for classifying whether an infant was born by C-section or vaginally and their age.
+    <br>
+    <br>
+    There is still much work to be done in this field, but I believe that this approach has great potential.
+    I think the use of the DNA embeddings was crucial to the success of this model.
+    <br>    
+    <br>
+     <a href="https://github.com/the-puzzler/Microbiome-Modelling" target="_blank" rel="noreferrer">Code</a>
+</p>
+
