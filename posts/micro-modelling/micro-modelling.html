@@ -18,8 +18,8 @@ The food you eat plays a massive role. Unfortunately, so do factors outside your
   In fact, it is thought that for the past 200 years of <i>modernisation</i>, we have seen an <a href="https://www.nature.com/articles/s41579-019-0191-8.pdf">extinction in microbiome diversity</a>, 
   potentially irreparably.
 
-  <br>
-  <br>
+</p>
+<p>
 
   Clearly there is something to study here, and even better, model. As of today, the space is wide open.
   In this post, I will outline my research on this topic and attempts to create a microbiome world model
@@ -48,10 +48,10 @@ The food you eat plays a massive role. Unfortunately, so do factors outside your
 </p>
 
 <hr>
-
 <h2>What can we aim to achieve?</h2>
-
 <p>
+
+
     If we can build a model that understands the interactions between microbes, we can build targeted probiotics herculean enough to reverse
     degenerate stable states to:
     <ul>
@@ -83,9 +83,9 @@ The food you eat plays a massive role. Unfortunately, so do factors outside your
     <br>
     <br>
     A sample consists of a list of present microbes and their abundances (how many there were) but we will only treat them as present/abscent here.
-</p>
-<img src="posts/micro-modelling/micro-modelling-imgs/data-example.png"  style="display:block; margin:20px auto; max-width:100%; height:auto;">
 
+<img src="posts/micro-modelling/micro-modelling-imgs/data-example.png"  style="display:block; margin:20px auto; max-width:100%; height:auto;">
+</p>
 
 <hr>
 
@@ -108,10 +108,11 @@ The food you eat plays a massive role. Unfortunately, so do factors outside your
 
 <hr>
 <h1> Model Objective</h1>
+<p>
 <div class="img-scroll">
   <img src="posts/micro-modelling/micro-modelling-imgs/model-setup.png" alt="Model Architecture" style="display:block; margin:20px auto; max-width:none; height:auto; width:800px;">
 </div>
-<p>
+
     The model was trained using a CELoss objective to predict the presence/absence of microbes in a sample given the other present microbes.
     In practice, this means the model sees a putative sample: this includes the DNA embeddings of present bacteria, and textual metadata (embedded with LLM).
     On each one of these embeddings it must then output a confidence in how likly it thought that embedding to be truly part of this sample.
@@ -120,8 +121,9 @@ The food you eat plays a massive role. Unfortunately, so do factors outside your
     Thus, to make this difficult, I used a bernouli noising strategy. Adding embeddings to confuse the model and as such make it learn the true relationships.
 </p>
 <hr>
+<h2>Why no Auto-Regression?</h2>
 <p>
-    <h2>Why no Auto-Regression?</h2>
+    
     I opted not to use auto-regression and instead use this quasi-contrastive approach because microbes in a sample are not ordinal. It doesn't make sense to impose an order on 
     them when they more naturally exist as unordered sets.
     This means there is no positional embedding whatsoever; the transformer operation is entirely permutation-invariant.
@@ -147,16 +149,16 @@ The food you eat plays a massive role. Unfortunately, so do factors outside your
     Now for the interesting part. What did the model learn?
     First lets look at how the models representation changes as we pass a noised sample through its layers.
     Below is a UMAP for first the small then the large model. The first subplot on both represents the DNA space.
-</p>
+
 <div class="img-scroll">
     Small Model
     <img src="posts/micro-modelling/micro-modelling-imgs/small-layers.jpg" alt="UMAP comparison" style="display:block; margin:20px auto;  height:auto;">
     Large Model
     <img src="posts/micro-modelling/micro-modelling-imgs/large-layers.jpg" alt="UMAP comparison" style="display:block; margin:20px auto; height:auto;">
 </div>
+</p>
 
 
-<hr>
 <p>
     In these figures the triangles represent the noise microbes and the colours
     represents the final logits they were assigned (remember lower logit == less likely to be here). We can clearly see in both cases, the triangles are relativly
@@ -181,12 +183,14 @@ The food you eat plays a massive role. Unfortunately, so do factors outside your
     To do this we will be using a held out gingivits dataset. This dataset consists of samples from patients with induced gingivitis over
     the course of a month. There is no finetuning or classification head. We simply take the model and run 0-shot.
 </p>
+<p>
 <h3>Drop-Out Test</h3>
+
 <div class="img-scroll">
     <img src="posts/micro-modelling/micro-modelling-imgs/drop-out-test.png" alt="Dropout ROC" style="display:block; margin:20px auto; max-width:none; height:auto; width:800px;">
 </div>
 
-<p>
+
     Wow again! Not only is the larger model (latter figures) better at this task, but both models are doing
     far better than random chance! This is very exciting because it means the model has learned some
     underlying representation of how microbes interact with each other. This is despite never being trained
@@ -194,14 +198,16 @@ The food you eat plays a massive role. Unfortunately, so do factors outside your
     in the future/past. Hence the model has learned: given this set of microbes: these ones are stable and these ones are not.
 </p>
 
+<p>
 <h3>Colonise Test</h3>
+
 <div class="img-scroll">
     <img src="posts/micro-modelling/micro-modelling-imgs/colonise-test.png" alt="Colonise ROC" style="display:block; margin:20px auto; max-width:none; height:auto; width:800px;">
 </div>
-<p>
+
     Another good result! Not quite as good but this test is much harder. Here the model must predict which microbes will newly appear
-    in the next time step. I tested this by taking microbes that were present in other samples but not at a given time point $t$.
-    Then I would place the microbes into $t$ and see if the model predicting higher logits on these putative microbes corresponded with
+    in the next time step. I tested this by taking microbes that were present in other samples but not at a given time point t.
+    Then I would place the microbes into t and see if the model predicting higher logits on these putative microbes corresponded with
     higher liklihood of that microbe appearing in the future.
 </p>
 <h3>What does this mean?</h3>
@@ -234,9 +240,9 @@ The food you eat plays a massive role. Unfortunately, so do factors outside your
 
 <hr>
 Small Model
-<img src="posts/micro-modelling/micro-modelling-imgs/3d-pca.jpg" alt="PCA of embeddings" style="display:block; margin:20px auto; height:auto; width:350px;">
+<img src="posts/micro-modelling/micro-modelling-imgs/3d-pca.jpg" alt="PCA of embeddings" style="display:block; margin:20px auto; height:auto; width:300px;">
 Large Model
-<img src="posts/micro-modelling/micro-modelling-imgs/2d-pca.jpg" alt="3D PCA of embeddings" style="display:block; margin:20px auto; height:auto; width:350px;">
+<img src="posts/micro-modelling/micro-modelling-imgs/2d-pca.jpg" alt="3D PCA of embeddings" style="display:block; margin:20px auto; height:auto; width:300px;">
 <hr>
 <p>
     The first PCA comes from the small model and the second from the large model. I used 2d for the large model
