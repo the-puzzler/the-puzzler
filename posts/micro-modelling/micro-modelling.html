@@ -1,12 +1,11 @@
 <h1>Microbiome World Modelling</h1>
 <p>
-  Did you know that on average, a human body contains about 38 trillion bacteria, which is more than the 
-  number of human cells?
+  Did you know that the human gut microbiome can predict how high your IQ is?
 
   <br>
   <br>
 
-  The human microbiome has been implicated in many negative and positive states. For example, dysboisis (poor regulation)
+  The human microbiome has been implicated in many negative and positive states. For example, poor regulation
   of the gut microbiome is linked to irritable bowel syndrome. On the other hand, super microbiome regulation has been linked to
   greater intelligence and better health outcomes.
 
@@ -46,14 +45,10 @@
 <p>
     If we can build a model that understands the interactions between microbes, we can:
     <ul>
-        <li>Use its internal representations for down stream tasks like disease prediction</li>
         <li>Predict which microbes can and cant live together</li>
-        <li>Use that information to create targeted pro-biotics to displace unwanted microbes</li>
+        <li>Create targeted pro-biotics to displace unwanted microbes</li>
+        <li>Create targeted pro-biotics to give us super powers</li>
     </ul>    
-    I like to think about it like this: imagine swallowing a pill that contains the A-team of microbes
-    designed specifically for your sampled gut microbiome to displace the bacteria causing you problems.
-    <br>
-    <br>
     Current methods struggle with this, because just sending random good microbes into the gut
     is not enough. The microbes need to be able to outcompete the existing ones given the exact context
     of *your* gut.
@@ -76,15 +71,16 @@
     <br>
     A sample consists of a list of present microbes and their abundances (how many there were) but we will only treat them as present/abscent here.
 </p>
+<img src="posts/micro-modelling/micro-modelling-imgs/data-example.png"  style="display:block; margin:20px auto; max-width:100%; height:auto;">
 
 <hr>
 
 <h2>Representation Problem</h1>
 
 <p> 
-    One of the crucial bottlenecks that this field has faced is the representation problem.
-    Microbial datasets typically consist of thousands of different OTUs (Microbes) but few samples.
-    In our case, given the global coverage we have ~ 100,000 OTUs. You can imagine then that any attempt to learn
+    A key bottleneck to ML in this field is the representation problem.
+    Microbial datasets typically consist of thousands of different Microbes but few samples.
+    In our case, given the global coverage, we have a vocabulary of ~100,000 microbes. You can imagine then that any attempt to learn
     embeddings to represent these microbes will cause a parameter explosion. We cant afford this because our sample
     count is only in the ~3M range.
     <br>
