@@ -1,13 +1,22 @@
 <h1>Microbiome World Modelling</h1>
 <p>
-  Did you know that the human gut microbiome can predict how high your IQ is?
+  
+Your gut can 
+<a href="https://www.nature.com/articles/s41467-022-29760-0.pdf">increase your IQ</a>, give you
+ <a href="https://www.nature.com/articles/s41591-019-0485-4.pdf">better cardio</a>, let you
+  <a href="https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0288718">eat ice cream all day and not get fat</a> 
+  and make you feel <a href="https://academic.oup.com/nutritionreviews/article/83/7/e1504/7934047">euphoria</a>. 
+  All you need is a good microbiome.
 
   <br>
   <br>
-
-  The human microbiome has been implicated in many negative and positive states. For example, poor regulation
-  of the gut microbiome is linked to irritable bowel syndrome. On the other hand, super microbiome regulation has been linked to
-  greater intelligence and better health outcomes.
+The food you eat plays a massive role. Unfortunately, so do factors outside your control.
+  You inheret your microbiome from your mother at birth, then from your environment as you grow up.
+  You are absolutly drowing in nooks and cranies, orifices and crevices everywhere in which microbes form reslient communties.
+  Most of the time, they are neutral or beneficial, but sometimes, they can fall into negative stable states.
+  Due to the enclosed nature of these environments, these states can embed themselves for the long haul and then be passed on to your children.
+  In fact, it is thought that for the past 200 years of <i>modernisation</i>, we have seen an <a href="https://www.nature.com/articles/s41579-019-0191-8.pdf">extinction in microbiome diversity</a>, 
+  potentially irreparably.
 
   <br>
   <br>
@@ -20,7 +29,7 @@
 
 <hr>
 
-<h2>What is a   Microbiome?</h2>
+<h2>What is a Microbiome?</h2>
 <p>
     A microbiome is a community of microorganisms, including bacteria, viruses, fungi, and other microbes, that inhabit a specific environment. 
     In humans, the microbiome primarily resides in the gut but can also be found on the skin, in the mouth, and in other areas of the body.
@@ -31,8 +40,8 @@
     <br>
 
     They interact with each other in complex ways and form communities with emergent properties. For example,
-    in your mouth, bacteria work toether to form a biofilm that protects them from the environment and gives them
-    a safe space to consume nutrients.
+    in your mouth, bacteria work together to form a biofilm that protects them from the environment and gives them
+    a safe space to consume nutrients (and give you cavities).
 
     <img src="posts/micro-modelling/micro-modelling-imgs/biofilm-img.jpg" alt="Biofilm example" style="display:block; margin:20px auto; max-width:100%; height:auto;">
 
@@ -43,15 +52,19 @@
 <h2>What can we aim to achieve?</h2>
 
 <p>
-    If we can build a model that understands the interactions between microbes, we can:
+    If we can build a model that understands the interactions between microbes, we can build targeted probiotics herculean enough to reverse
+    degenerate stable states to:
     <ul>
-        <li>Predict which microbes can and cant live together</li>
-        <li>Create targeted pro-biotics to displace unwanted microbes</li>
-        <li>Create targeted pro-biotics to give us super powers</li>
+        <li>Increase our IQ</li>
+        <li>Get rid of diseases like IBS, eczema, auto-immune etc,</li>
+        <li>Becomes marathon runners</li>
+        <li>Eat pizza without consequence</li>
+        <li><a href="https://bmjopengastro.bmj.com/content/bmjgast/6/1/e000325.full.pdf">Become drunk 24/7</a> (although technically already possible)</li>
+
     </ul>    
     Current methods struggle with this, because just sending random good microbes into the gut
-    is not enough. The microbes need to be able to outcompete the existing ones given the exact context
-    of *your* gut.
+    is not enough. We need a targeted approach that takes into account the existing microbes,
+    displacing only the guys we don't want and ensuring the guys we do want can plausibly survive there.
 </p>
 
 <hr>
@@ -73,77 +86,21 @@
 </p>
 <img src="posts/micro-modelling/micro-modelling-imgs/data-example.png"  style="display:block; margin:20px auto; max-width:100%; height:auto;">
 
-<hr>
-
-<h2>Representation Problem</h1>
-
-<p> 
-    A key bottleneck to ML in this field is the representation problem.
-    Microbial datasets typically consist of thousands of different Microbes but few samples.
-    In our case, given the global coverage, we have a vocabulary of ~100,000 microbes. You can imagine then that any attempt to learn
-    embeddings to represent these microbes will cause a parameter explosion. We cant afford this because our sample
-    count is only in the ~3M range.
-    <br>
-    <br>
-    Any linear layer MLP acting on the full binary presence absence input would have to deal with incredbily sparse
-    inputs and inefficient parameter usage.
-</p>
-
-<div class="table-responsive">
-    <table style=" border-collapse: collapse;">
-        <thead>
-            <tr>
-                <th style="border: 1px solid #ccc; padding: 8px;">Architecture</th>
-                <th style="border: 1px solid #ccc; padding: 8px;">Parameters</th>
-                <th style="border: 1px solid #ccc; padding: 8px;">Computation</th>
-                <th style="border: 1px solid #ccc; padding: 8px;">Notes</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td style="border: 1px solid #ccc; padding: 8px;"><strong>MLP (dense)</strong></td>
-                <td style="border: 1px solid #ccc; padding: 8px;">(F × h + L × h²)</td>
-                <td style="border: 1px solid #ccc; padding: 8px;">F × h</td>
-                <td style="border: 1px solid #ccc; padding: 8px;">All 100k features processed</td>
-            </tr>
-            <tr>
-                <td style="border: 1px solid #ccc; padding: 8px;"><strong>Transformer + learned embeddings</strong></td>
-                <td style="border: 1px solid #ccc; padding: 8px;">(F × d + 4L d²)</td>
-                <td style="border: 1px solid #ccc; padding: 8px;">F × d</td>
-                <td style="border: 1px solid #ccc; padding: 8px;">Embedding matrix dominates</td>
-            </tr>
-            <tr>
-                <td style="border: 1px solid #ccc; padding: 8px;"><strong>Transformer + fixed embeddings</strong></td>
-                <td style="border: 1px solid #ccc; padding: 8px;">(4L d²)</td>
-                <td style="border: 1px solid #ccc; padding: 8px;">S × d</td>
-                <td style="border: 1px solid #ccc; padding: 8px;">Only present features!</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-<p>
-    Where:
-    <ul>
-        <li><strong>F</strong> = total number of features (e.g., 100,000 microbes)</li>
-        <li><strong>S</strong> = number of present features in a sample (sparse, typically much less than F)</li>
-        <li><strong>d</strong> = embedding dimension</li>
-        <li><strong>h</strong> = hidden layer dimension</li>
-        <li><strong>L</strong> = number of layers</li>
-    </ul>
-</p>
 
 <hr>
 
-<h2>Representation Solution</h2>
+<h2>Representation</h2>
 <p>
-    To solve this problem, I thought to myself: 'I wonder if there is some common language that can be used to 
-    describe a microbe, like characters for text.' But of course, microbes, do have a common descriptive language,
-    the same language. It's their DNA: A, T, C, G.
+    An important question to ask is: how do we represent microbes in a way that a model can understand?
+    This is a tricky question because microbes are not like words in a sentence. They do not have a fixed order or structure.
+    Even defining a microbe can be somewhat tricky (ultimatly they are just bags of DNA).
     <br>
     <br>
-    We could use DNA language models to embed 16S rRNA sequences (widely accepted way of identifying a unique microbe) into a common space.
-    This way, we can use the parameter efficient transformer archteciture without requiring learned embeddings.
-    Now the input space looks like this:
+    Here I choose to use DNA language models to embed 16S rRNA sequences (widely accepted, uniqely identifying DNA sequence) into a common space.
+    This way, we can use the parameter efficient transformer architecture without requiring learned embeddings.
+    <br>
+    <br>
+    From MicrobeAtlas, we now have a vocabulary size of ~100k unique DNA pieces/microbes. Plotting them in DNA space now looks like this:
     <img src="posts/micro-modelling/micro-modelling-imgs/input-space.jpg" alt="16S input space" style="display:block; margin:20px auto; max-width:100%; height:auto;">
     The different clusters represent Archea (e.g. Methanobrevibacter), Bacteria (e.g. lactobacillus), and Eukaryota (e.g. human, amoeba, etc.).
 
@@ -164,12 +121,15 @@
 </p>
 <hr>
 <p>
-
-    <strong>Interesting Note:</strong> Using gaussian noise on the DNA embeddings made the task trivial. This
-    likely is the result of the fact that the embeddings from LLM style masked token prediction objectives sit on a very
-    tight and un-mollified manifold. I also found that I could leverage the similairty of embeddings to interesting effect.
-    For example, if I added a microbe that was very similair to an existing one, the task again became far too easy. Thus I adapted the noising to use both
-    purposfully similair microbes at times and at other times random.
+    <h2>Why no Auto-Regression?</h2>
+    I opted not to use auto-regression and instead use this quasi-contrastive approach because microbes in a sample are not ordinal. It doesn't make sense to impose an order on 
+    them when they more naturally exist as unordered sets.
+    This means there is no positional embedding whatsoever; the transformer operation is entirely permutation-invariant.
+    <br>
+    <br>
+    This method also avoids projecting back to vocabulary space, which would be very expensive given the size of the vocabulary.
+    It also means the model is more generalised beause it has an open vocabulary (any DNA embedding can go in, even if here we stick to a predefined set from MicrobeAtlas).
+    
 </p>
 
 <hr>
@@ -185,21 +145,27 @@
 <h1>Results/Eval</h1>
 <p> 
     Now for the interesting part. What did the model learn?
-    First lets look at how the models representation changes as we pass a noised sample through it.
+    First lets look at how the models representation changes as we pass a noised sample through its layers.
     Below is a UMAP for first the small then the large model. The first subplot on both represents the DNA space.
 </p>
 <div class="img-scroll">
+    Small Model
     <img src="posts/micro-modelling/micro-modelling-imgs/small-layers.jpg" alt="UMAP comparison" style="display:block; margin:20px auto;  height:auto;">
+    Large Model
     <img src="posts/micro-modelling/micro-modelling-imgs/large-layers.jpg" alt="UMAP comparison" style="display:block; margin:20px auto; height:auto;">
 </div>
 
 
 <hr>
 <p>
-    Wow, so we can clearly see that the larger model has a much better go at figuring out which microbes
-    were original and which were added. In these figures the triangles represent the noise microbes and the colours
-    represents the final logits they were assigned. We can clearly see in both cases, the triangles are relativly
+    In these figures the triangles represent the noise microbes and the colours
+    represents the final logits they were assigned (remember lower logit == less likely to be here). We can clearly see in both cases, the triangles are relativly
     evenly distrubuted in the DNA space, but as the model processes them, they are slowly removed.
+    <br>
+    <br>
+    Wow, so we can clearly see that the larger model has a much better go at figuring out which microbes
+    were original and which were added. You'll also notice if you look closely that some triangles are not given
+    lower logits whilst some circles are. This is likely because even the ground truth is somewhat noisey and stochastic.
 </p>
 
 <hr>
@@ -213,7 +179,7 @@
     <br>
 
     To do this we will be using a held out gingivits dataset. This dataset consists of samples from patients with induced gingivitis over
-    the course of a month.
+    the course of a month. There is no finetuning or classification head. We simply take the model and run 0-shot.
 </p>
 <h3>Drop-Out Test</h3>
 <div class="img-scroll">
@@ -238,13 +204,28 @@
     Then I would place the microbes into $t$ and see if the model predicting higher logits on these putative microbes corresponded with
     higher liklihood of that microbe appearing in the future.
 </p>
+<h3>What does this mean?</h3>
+<p>
+    Both of these results will be super useful for designing targeted probiotics as they mean we can cheaply run
+    millions of experiments in silico and optimise the logit space for the microbes we want to drop out/colonise.
+    It should also be noted that the dataset itself is inherently noisey and the nature of microbiomes is probably stochastic, so perfect
+    predictions are not to be expected.
+
+</p>
 
 <hr>
 <h2>Infants Eval</h2>
 <p>
-    Lets change tack here and see whether the final embeddings produced by the model might also be good for something.
-    To do this, I will use a dataset of samples taken from infants at different ages, some born by C-section and some vaginally.
-    The goal here is to see whether the models learned embeddings can make this task easier.
+    Lets change tack here and see whether the final embeddings produced by the model might also be good as embeddings/representations of samples.
+    To do this, I will use a dataset of samples taken from infant guts at different ages, some born by C-section and some vaginally.
+    The goal here is to see whether the models learned embeddings can predict age and birth mode.
+
+    <br>
+    <br>
+    Given the implications of the microbiome for health outcomes, if we can tell them apart, that means the model easily finds patterns that differentiate the states.
+    This would justify the recently adopted, somewhat medieval, practice of vaginal seeding for C-section born infants.
+    
+
     <br>
     <br>
     First lets take a look at a PCA of the embeddings produced by our models for the samples, this will show us
@@ -252,15 +233,16 @@
 </p>
 
 <hr>
+Small Model
 <img src="posts/micro-modelling/micro-modelling-imgs/3d-pca.jpg" alt="PCA of embeddings" style="display:block; margin:20px auto; height:auto; width:350px;">
-
+Large Model
 <img src="posts/micro-modelling/micro-modelling-imgs/2d-pca.jpg" alt="3D PCA of embeddings" style="display:block; margin:20px auto; height:auto; width:350px;">
 <hr>
 <p>
     The first PCA comes from the small model and the second from the large model. I used 2d for the large model
     because it was easier to understand. In both cases we can see that the model has learned some very obvious structure.
     It clearly inherently differentiates between the different age groups and shows an almost monotonic time progression between them.
-    Again this data was totally unseen.
+    Again this data was totally unseen and this is 0-shot (no finetuning or classification head).
 
     <br>
     <br>
@@ -275,11 +257,24 @@
 <p> 
     Again we see that the larger model is better, but both models are doing far better than random chance.
     For comparison I show the results of a comparable method from MGM (<a href="https://www.biorxiv.org/content/10.1101/2024.12.30.630825v1.full" target="_blank" rel="noreferrer">paper</a>).
-    Their model has ~2M parameters and they fine-tuned on the infants data.
+    Their model has ~2M parameters and they fine-tuned on the infants data (unlike my frozen model approach).
 </p>
 <div class="img-scroll">
     <img src="posts/micro-modelling/micro-modelling-imgs/mgm-infants.png" style="display:block; margin:20px auto;height:auto; width:500px;">
 </div>
+
+<hr>
+<h3>What does this mean?</h3>
+<p>
+    This means that the models embeddings are rich, and in this embedding space, there is a clear structure that differentiates the different age groups
+    and birth modes. In fact we can see that even at 5Ys of age the model embedding differentiates between C-section and vaginally born infants. Clearly,
+    the birth mode is having long lasting effects on the microbiome.
+    <br>    
+    <br>
+    Linking back to our discussion on health, IQ, cardio, etc, who knows what the long term consequences of this difference are?
+    Given our results in colonization, maybe we could make a per-indivudal pro-botic to help C-section born infants? (Although the vaginal seeding practice is probably enough).
+</p>
+
 <hr>
 
 <h1>Conclusion</h1>
@@ -288,8 +283,11 @@
     The model was trained on millions of samples from MicrobeAtlas and was able to learn
     interesting representations of microbial interactions. These representations were then
     shown to be useful for predicting which microbes would drop out or colonise in a held out
-    gingivitis dataset. Furthermore, the final embeddings produced by the model were shown to be
+    gingivitis dataset. Furthermore, the final embeddings produced by the model were rich enough to be
     useful for classifying whether an infant was born by C-section or vaginally and their age.
+    <br>
+    <br>
+    One day, this model could be used to design targeted and individual probiotics to help us all become super-humans.
     <br>
     <br>
     There is still much work to be done in this field, but I believe that this approach has great potential.
