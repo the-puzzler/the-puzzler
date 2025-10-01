@@ -11,27 +11,58 @@ function debounce(fn, ms){
 // -----------------------------
 // Posts list
 // -----------------------------
+// -----------------------------
+// Posts list
+// -----------------------------
 async function loadPosts(){
   const res = await fetch('posts.json', { cache: 'no-store' });
   const posts = await res.json();
   return posts.sort((a,b)=> new Date(b.date) - new Date(a.date));
 }
+
 function formatDate(iso){
-  try{ return new Date(iso).toLocaleDateString(undefined, {year:'numeric', month:'short', day:'2-digit'}); }
-  catch{ return iso; }
+  try { 
+    return new Date(iso).toLocaleDateString(undefined, {year:'numeric', month:'short', day:'2-digit'}); 
+  } catch { 
+    return iso; 
+  }
 }
+
+// Treat http(s) and protocol-relative (//) as external
+function isExternalPath(path = "") {
+  return /^(https?:)?\/\//i.test(path);
+}
+
+function makeHref(path = "") {
+  return isExternalPath(path) 
+    ? path 
+    : `post.html?p=${encodeURIComponent(path)}`;
+}
+
+function linkAttrs(path = "") {
+  return isExternalPath(path) 
+    ? 'target="_blank" rel="noopener noreferrer"' 
+    : '';
+}
+
 async function renderList(){
   const listEl = $('#post-list');
   if(!listEl) return;
+
   const posts = await loadPosts();
-  listEl.innerHTML = posts.map(p => `
-    <li class="item">
-      <h3><a href="post.html?p=${encodeURIComponent(p.path)}">${p.title}</a></h3>
-      <small>${formatDate(p.date)}</small>
-      ${p.description ? `<p>${p.description}</p>` : ``}
-    </li>
-  `).join('');
+  listEl.innerHTML = posts.map(p => {
+    const href = makeHref(p.path || "");
+    const attrs = linkAttrs(p.path || "");
+    return `
+      <li class="item">
+        <h3><a href="${href}" ${attrs}>${p.title}</a></h3>
+        <small>${formatDate(p.date)}</small>
+        ${p.description ? `<p>${p.description}</p>` : ``}
+      </li>
+    `;
+  }).join('');
 }
+
 
 // -----------------------------
 // MathJax typeset (awaitable)
